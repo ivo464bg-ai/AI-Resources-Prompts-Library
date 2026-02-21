@@ -14,4 +14,15 @@ body {
   padding: 0;
 }
 
+#user-email {
+  color: #adb5bd !important;
+  font-size: 0.8rem;
+  text-transform: lowercase;
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
 /* Add any other global resets or utility classes here */

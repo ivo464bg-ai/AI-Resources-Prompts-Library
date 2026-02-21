@@ -11,16 +11,16 @@
   <!-- Page Specific CSS -->
   <link rel="stylesheet" href="./dashboard.css">
 </head>
-<body>
+<body class="d-flex flex-column min-vh-100">
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container">
+    <div class="container-fluid">
       <a class="navbar-brand" href="../../index.html">AI Prompts Library</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav me-auto">
           <li class="nav-item">
             <a class="nav-link" href="../../index.html">Home</a>
           </li>
@@ -30,8 +30,16 @@
           <li class="nav-item">
             <a class="nav-link" href="../prompts/prompts.html">Prompts</a>
           </li>
+        </ul>
+        <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item">
-            <a class="nav-link" href="#" id="logoutBtn">Logout</a>
+            <span id="user-email" class="navbar-text"></span>
+          </li>
+          <li class="nav-item d-none d-lg-flex align-items-center mx-3">
+            <div class="vr text-light" style="height: 24px;"></div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="logoutBtn">Log out</a>
           </li>
         </ul>
       </div>
@@ -39,46 +47,97 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="container mt-5">
-    <div class="row mb-4">
-      <div class="col">
-        <h2>Dashboard</h2>
-        <p class="text-muted">Manage your prompt categories.</p>
-      </div>
-      <div class="col-auto">
-        <button class="btn btn-primary" id="createCategoryBtn">Create Category</button>
-      </div>
-    </div>
+  <div class="container-fluid mt-4 mb-5 flex-grow-1">
+    <div class="row">
+      <!-- Sidebar: Categories -->
+      <aside class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse rounded p-3 mb-4 mb-md-0" id="sidebarMenu">
+        <div class="position-sticky">
+          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h5 class="mb-0">Categories</h5>
+            <button class="btn btn-sm btn-primary" id="createCategoryBtn" title="Create New Category">+</button>
+          </div>
+          
+          <!-- Loading Spinner for Categories -->
+          <div id="categoriesLoading" class="text-center my-3">
+            <div class="spinner-border text-primary spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
 
-    <div class="row" id="categoriesContainer">
-      <!-- Categories will be dynamically loaded here -->
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Code Analysis</h5>
-            <p class="card-text">Prompts for analyzing and refactoring code.</p>
-            <a href="../prompts/prompts.html?category=code-analysis" class="btn btn-outline-primary btn-sm">View Prompts</a>
+          <!-- Categories List -->
+          <ul class="nav flex-column" id="categoriesList" style="display: none;">
+            <!-- Categories will be dynamically loaded here -->
+          </ul>
+          
+          <!-- Empty State for Categories -->
+          <div id="categoriesEmpty" class="text-center text-muted my-3" style="display: none;">
+            <small>No categories found.</small>
           </div>
         </div>
-      </div>
-      <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm">
-          <div class="card-body">
-            <h5 class="card-title">Creative Writing</h5>
-            <p class="card-text">Prompts for generating stories and articles.</p>
-            <a href="../prompts/prompts.html?category=creative-writing" class="btn btn-outline-primary btn-sm">View Prompts</a>
+      </aside>
+
+      <!-- Main Area: Saved Prompts -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+          <h1 class="h2">Saved Prompts</h1>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-sm btn-success" id="addPromptBtn">
+              Add New Prompt
+            </button>
           </div>
         </div>
-      </div>
+
+        <!-- Loading Spinner for Prompts -->
+        <div id="promptsLoading" class="text-center my-5">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Prompts Container -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="promptsContainer" style="display: none;">
+          <!-- Prompts will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State for Prompts -->
+        <div id="promptsEmpty" class="text-center text-muted my-5" style="display: none;">
+          <h5>No prompts found.</h5>
+          <p>Create a category and add your first prompt!</p>
+        </div>
+      </main>
     </div>
-  </main>
+  </div>
 
   <!-- Footer -->
-  <footer class="bg-dark text-white text-center py-3 mt-auto fixed-bottom">
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
     <div class="container">
       <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- Create Category Modal -->
+  <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createCategoryModalLabel">Create New Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createCategoryForm">
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Category Name</label>
+              <input type="text" class="form-control" id="categoryName" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bootstrap JS Bundle with Popper -->
   <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
