@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - AI Resources & Prompts Library</title>
+  <!-- Bootstrap CSS -->
+  <!-- Global CSS -->
+  <!-- Page Specific CSS -->
+  <script type="module" crossorigin src="/assets/dashboard-7Y3vLtgR.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-DBugF8ZN.js">
+  <link rel="stylesheet" crossorigin href="/assets/supabaseClient-DsVCBih7.css">
+  <link rel="stylesheet" crossorigin href="/assets/dashboard-CeDFzkVW.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="../../index.html">AI Prompts Library</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="../../index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="../prompts/prompts.html">Prompts</a>
+          </li>
+        </ul>
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item">
+            <span id="user-email" class="navbar-text"></span>
+          </li>
+          <li class="nav-item d-none d-lg-flex align-items-center mx-3">
+            <div class="vr text-light" style="height: 24px;"></div>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" id="logoutBtn">Log out</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container-fluid mt-4 mb-5 flex-grow-1">
+    <div class="row">
+      <!-- Sidebar: Categories -->
+      <aside class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse rounded p-3 mb-4 mb-md-0" id="sidebarMenu">
+        <div class="position-sticky">
+          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+            <h5 class="mb-0">Categories</h5>
+            <button class="btn btn-sm btn-primary" id="createCategoryBtn" title="Create New Category">+</button>
+          </div>
+          
+          <!-- Loading Spinner for Categories -->
+          <div id="categoriesLoading" class="text-center my-3">
+            <div class="spinner-border text-primary spinner-border-sm" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <!-- Categories List -->
+          <ul class="nav flex-column" id="categoriesList" style="display: none;">
+            <!-- Categories will be dynamically loaded here -->
+          </ul>
+          
+          <!-- Empty State for Categories -->
+          <div id="categoriesEmpty" class="text-center text-muted my-3" style="display: none;">
+            <small>No categories found.</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Area: Saved Prompts -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
+          <h1 class="h2">Saved Prompts</h1>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <button type="button" class="btn btn-sm btn-success" id="addPromptBtn">
+              Add New Prompt
+            </button>
+          </div>
+        </div>
+
+        <!-- Loading Spinner for Prompts -->
+        <div id="promptsLoading" class="text-center my-5">
+          <div class="spinner-border text-success" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Prompts Container -->
+        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="promptsContainer" style="display: none;">
+          <!-- Prompts will be dynamically loaded here -->
+        </div>
+
+        <!-- Empty State for Prompts -->
+        <div id="promptsEmpty" class="text-center text-muted my-5" style="display: none;">
+          <h5>No prompts found.</h5>
+          <p>Create a category and add your first prompt!</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
+    <div class="container">
+      <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Create Category Modal -->
+  <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="createCategoryModalLabel">Create New Category</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="createCategoryForm">
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Category Name</label>
+              <input type="text" class="form-control" id="categoryName" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add New Prompt Modal -->
+  <div class="modal fade" id="addPromptModal" tabindex="-1" aria-labelledby="addPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addPromptModalLabel">Add New Prompt</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addPromptForm">
+            <input type="hidden" id="promptCategoryId">
+            <div class="mb-3">
+              <label for="promptTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="promptTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="promptText" class="form-label">Prompt Text</label>
+              <textarea class="form-control" id="promptText" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="promptResult" class="form-label">Result Text (Optional)</label>
+              <textarea class="form-control" id="promptResult" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="savePromptBtn">Save Prompt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- View/Edit Prompt Modal -->
+  <div class="modal fade" id="viewPromptModal" tabindex="-1" aria-labelledby="viewPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="viewPromptModalLabel">Prompt Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="viewPromptForm">
+            <input type="hidden" id="editPromptId">
+            <div class="mb-3">
+              <label for="editPromptTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="editPromptTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="editPromptText" class="form-label">Prompt Text</label>
+              <textarea class="form-control" id="editPromptText" rows="6" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editPromptResult" class="form-label">Result Text</label>
+              <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="updatePromptBtn">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Page Specific JS -->
+</body>
+</html>

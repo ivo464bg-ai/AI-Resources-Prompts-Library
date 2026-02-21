@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - AI Resources & Prompts Library</title>
+  <!-- Bootstrap CSS -->
+  <!-- Global CSS -->
+  <!-- Page Specific CSS -->
+  <script type="module" crossorigin src="/assets/login-W9durUTW.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-DBugF8ZN.js">
+  <link rel="stylesheet" crossorigin href="/assets/supabaseClient-DsVCBih7.css">
+  <link rel="stylesheet" crossorigin href="/assets/login-B81hgMT2.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <a class="navbar-brand" href="../../index.html">AI Prompts Library</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="../../index.html">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./login.html">Login / Register</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            <h2 class="text-center mb-4" id="formTitle">Login</h2>
+            
+            <!-- Alert Area -->
+            <div id="alertArea" class="alert d-none" role="alert"></div>
+
+            <form id="authForm">
+              <div class="mb-3">
+                <label for="email" class="form-label">Email address</label>
+                <input type="email" class="form-control" id="email" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required>
+              </div>
+              <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Login</button>
+              </div>
+              <div class="text-center mt-3">
+                <span id="toggleText">Don't have an account?</span>
+                <a href="#" id="toggleModeBtn" class="text-decoration-none">Register here</a>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3 mt-auto fixed-bottom">
+    <div class="container">
+      <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap JS Bundle with Popper -->
+  <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Page Specific JS -->
+</body>
+</html>
