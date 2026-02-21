@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Parse URL parameters to get category if any
   const urlParams = new URLSearchParams(window.location.search);
   const categoryId = urlParams.get('category');
+  const searchQuery = urlParams.get('search');
   
   let allPrompts = [];
 
@@ -88,7 +89,19 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (error) throw error;
 
       allPrompts = prompts;
-      renderPrompts(allPrompts);
+      
+      if (searchQuery) {
+        searchInput.value = searchQuery;
+        const searchTerm = searchQuery.toLowerCase();
+        const filteredPrompts = allPrompts.filter(prompt => 
+          prompt.title.toLowerCase().includes(searchTerm) || 
+          prompt.prompt_text.toLowerCase().includes(searchTerm) ||
+          (prompt.result_text && prompt.result_text.toLowerCase().includes(searchTerm))
+        );
+        renderPrompts(filteredPrompts);
+      } else {
+        renderPrompts(allPrompts);
+      }
     } catch (error) {
       console.error('Error fetching prompts:', error.message);
       promptsLoading.style.display = 'none';

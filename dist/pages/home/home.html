@@ -7,40 +7,40 @@
   <!-- Bootstrap CSS -->
   <!-- Global CSS -->
   <!-- Page Specific CSS -->
-  <script type="module" crossorigin src="/assets/main-DbZgWaC5.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-DBugF8ZN.js">
+  <script type="module" crossorigin src="/assets/main-DdJzU6CI.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-Db4K6C7q.js">
   <link rel="stylesheet" crossorigin href="/assets/supabaseClient-DsVCBih7.css">
-  <link rel="stylesheet" crossorigin href="/assets/main-BnDvy9d2.css">
+  <link rel="stylesheet" crossorigin href="/assets/main-4Y5Lg-hb.css">
 </head>
 <body>
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
     <div class="container-fluid">
-      <a class="navbar-brand" href="./index.html">AI Prompts Library</a>
+      <a class="navbar-brand" href="./home.html">AI Prompts Library</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="./index.html">Home</a>
+            <a class="nav-link active" aria-current="page" href="./home.html">Home</a>
           </li>
           <li class="nav-item" id="nav-dashboard" style="display: none;">
-            <a class="nav-link" href="./pages/dashboard/dashboard.html">Dashboard</a>
+            <a class="nav-link" href="../dashboard/dashboard.html">Dashboard</a>
           </li>
           <li class="nav-item" id="nav-prompts" style="display: none;">
-            <a class="nav-link" href="./pages/prompts/prompts.html">Prompts</a>
+            <a class="nav-link" href="../prompts/prompts.html">Prompts</a>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto align-items-center">
           <li class="nav-item" id="nav-user-email" style="display: none;">
-            <span class="navbar-text text-muted small" id="user-email-display"></span>
+            <span class="navbar-text" id="user-email-display"></span>
           </li>
           <li class="nav-item d-none d-lg-flex align-items-center mx-3" id="nav-divider" style="display: none !important;">
             <div class="vr text-light" style="height: 24px;"></div>
           </li>
           <li class="nav-item" id="nav-login">
-            <a class="nav-link" href="./pages/login/login.html">Login / Register</a>
+            <a class="nav-link" href="../login/login.html">Login / Register</a>
           </li>
           <li class="nav-item" id="nav-logout" style="display: none;">
             <a class="nav-link" href="#" id="logout-btn">Log out</a>
@@ -57,7 +57,7 @@
       <div class="col-md-8">
         <h1 class="display-4 mb-4">Welcome to AI Resources & Prompts Library</h1>
         <p class="lead mb-4">Manage your AI prompts, experimental queries, and AI-generated results in one secure place.</p>
-        <a href="./pages/login/login.html" class="btn btn-primary btn-lg">Get Started</a>
+        <a href="../login/login.html" class="btn btn-primary btn-lg">Get Started</a>
       </div>
     </div>
 
@@ -107,16 +107,6 @@
           </div>
         </div>
       </div>
-      
-      <!-- Search Results Area -->
-      <div class="row mt-4" id="search-results-container" style="display: none;">
-        <div class="col-12">
-          <h4 class="mb-3">Search Results</h4>
-          <div id="search-results-list" class="list-group">
-            <!-- Results will be populated here -->
-          </div>
-        </div>
-      </div>
     </div>
   </main>
 
@@ -127,8 +117,7 @@
     </div>
   </footer>
 
-  <!-- Bootstrap JS Bundle with Popper -->
-  <script src="node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap JS Bundle with Popper -->
   <!-- Page Specific JS -->
 </body>
 </html>
