@@ -9,6 +9,7 @@
     "preview": "node node_modules/vite/bin/vite.js preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.97.0",
     "bootstrap": "^5.3.3"
   },
   "devDependencies": {

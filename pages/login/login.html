@@ -38,8 +38,12 @@
       <div class="col-md-6 col-lg-4">
         <div class="card shadow-sm">
           <div class="card-body p-4">
-            <h2 class="text-center mb-4">Login</h2>
-            <form id="loginForm">
+            <h2 class="text-center mb-4" id="formTitle">Login</h2>
+            
+            <!-- Alert Area -->
+            <div id="alertArea" class="alert d-none" role="alert"></div>
+
+            <form id="authForm">
               <div class="mb-3">
                 <label for="email" class="form-label">Email address</label>
                 <input type="email" class="form-control" id="email" required>
@@ -49,8 +53,11 @@
                 <input type="password" class="form-control" id="password" required>
               </div>
               <div class="d-grid gap-2">
-                <button type="submit" class="btn btn-primary">Login</button>
-                <button type="button" class="btn btn-outline-secondary" id="registerBtn">Register</button>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Login</button>
+              </div>
+              <div class="text-center mt-3">
+                <span id="toggleText">Don't have an account?</span>
+                <a href="#" id="toggleModeBtn" class="text-decoration-none">Register here</a>
               </div>
             </form>
           </div>
