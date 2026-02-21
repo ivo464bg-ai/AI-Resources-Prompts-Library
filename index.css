@@ -1,0 +1,9 @@
+/* Landing Page Specific Styles */
+main {
+  min-height: calc(100vh - 160px); /* Adjust based on navbar and footer height */
+}
+
+.display-4 {
+  font-weight: 600;
+  color: var(--primary-color);
+}

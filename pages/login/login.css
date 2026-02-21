@@ -1,0 +1,9 @@
+/* Login Page Specific Styles */
+.card {
+  border-radius: 10px;
+  border: none;
+}
+
+.card-body {
+  background-color: #ffffff;
+}
