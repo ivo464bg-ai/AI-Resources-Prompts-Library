@@ -130,12 +130,24 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
               ` : ''}
               <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary btn-sm view-prompt-btn" data-id="${prompt.id}">View Details</button>
                 <button class="btn btn-outline-danger btn-sm delete-prompt-btn" data-id="${prompt.id}">Delete</button>
               </div>
             </div>
           </div>
         `;
         promptsContainer.appendChild(col);
+      });
+
+      // Add view details listeners
+      document.querySelectorAll('.view-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const promptId = e.currentTarget.getAttribute('data-id');
+          const prompt = promptsToRender.find(p => p.id === promptId);
+          if (prompt) {
+            openViewPromptModal(prompt);
+          }
+        });
       });
 
       // Add delete listeners
@@ -224,6 +236,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
       console.error('Error creating prompt:', error.message);
       alert('Failed to create prompt: ' + error.message);
+    }
+  });
+
+  // View/Edit Prompt Functionality
+  const viewPromptModal = new window.bootstrap.Modal(document.getElementById('viewPromptModal'));
+  const updatePromptBtn = document.getElementById('updatePromptBtn');
+  const editPromptIdInput = document.getElementById('editPromptId');
+  const editPromptTitleInput = document.getElementById('editPromptTitle');
+  const editPromptTextInput = document.getElementById('editPromptText');
+  const editPromptResultInput = document.getElementById('editPromptResult');
+
+  function openViewPromptModal(prompt) {
+    editPromptIdInput.value = prompt.id;
+    editPromptTitleInput.value = prompt.title;
+    editPromptTextInput.value = prompt.prompt_text;
+    editPromptResultInput.value = prompt.result_text || '';
+    
+    viewPromptModal.show();
+  }
+
+  updatePromptBtn.addEventListener('click', async () => {
+    const id = editPromptIdInput.value;
+    const title = editPromptTitleInput.value.trim();
+    const text = editPromptTextInput.value.trim();
+    const result = editPromptResultInput.value.trim();
+
+    if (!title || !text) {
+      alert('Please fill in the required fields (Title and Prompt Text).');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('prompts')
+        .update({ 
+          title: title, 
+          prompt_text: text, 
+          result_text: result 
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      viewPromptModal.hide();
+      fetchPrompts(); // Refresh the list
+      
+      alert('Prompt updated successfully!');
+    } catch (error) {
+      console.error('Error updating prompt:', error.message);
+      alert('Failed to update prompt: ' + error.message);
     }
   });
 
