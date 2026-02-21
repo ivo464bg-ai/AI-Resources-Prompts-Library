@@ -5,6 +5,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logoutBtn = document.getElementById('logoutBtn');
   const createPromptBtn = document.getElementById('createPromptBtn');
   const searchInput = document.getElementById('searchPrompts');
+  
+  const promptsLoading = document.getElementById('promptsLoading');
+  const promptsContainer = document.getElementById('promptsContainer');
+  const promptsEmpty = document.getElementById('promptsEmpty');
+  const categoryTitle = document.getElementById('categoryTitle');
 
   // 1. Check if user is logged in
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -17,12 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Display user email
   const userEmailSpan = document.getElementById('user-email');
+  let currentUser = null;
   if (userEmailSpan) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user) {
       window.location.href = '../login/login.html';
       return;
     }
+    currentUser = user;
     if (user.email) {
       userEmailSpan.textContent = user.email;
     }
@@ -30,11 +37,129 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Parse URL parameters to get category if any
   const urlParams = new URLSearchParams(window.location.search);
-  const category = urlParams.get('category');
+  const categoryId = urlParams.get('category');
   
-  if (category) {
-    document.getElementById('categoryTitle').textContent = `Prompts: ${category}`;
+  let allPrompts = [];
+
+  // Fetch Categories for the select dropdown
+  async function fetchCategoriesForSelect() {
+    const select = document.getElementById('promptCategorySelect');
+    try {
+      const { data: categories, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+
+      categories.forEach(cat => {
+        const option = document.createElement('option');
+        option.value = cat.id;
+        option.textContent = cat.name;
+        if (categoryId && cat.id === categoryId) {
+          option.selected = true;
+          categoryTitle.textContent = `Prompts: ${cat.name}`;
+        }
+        select.appendChild(option);
+      });
+    } catch (error) {
+      console.error('Error fetching categories:', error.message);
+    }
   }
+
+  // Fetch Prompts
+  async function fetchPrompts() {
+    try {
+      promptsLoading.style.display = 'block';
+      promptsContainer.style.display = 'none';
+      promptsEmpty.style.display = 'none';
+
+      let query = supabase
+        .from('prompts')
+        .select('*, categories(name)')
+        .order('created_at', { ascending: false });
+
+      if (categoryId) {
+        query = query.eq('category_id', categoryId);
+      }
+
+      const { data: prompts, error } = await query;
+
+      if (error) throw error;
+
+      allPrompts = prompts;
+      renderPrompts(allPrompts);
+    } catch (error) {
+      console.error('Error fetching prompts:', error.message);
+      promptsLoading.style.display = 'none';
+      promptsEmpty.style.display = 'block';
+      promptsEmpty.innerHTML = '<h5 class="text-danger">Failed to load prompts.</h5>';
+    }
+  }
+
+  function renderPrompts(promptsToRender) {
+    promptsLoading.style.display = 'none';
+
+    if (promptsToRender.length === 0) {
+      promptsContainer.style.display = 'none';
+      promptsEmpty.style.display = 'block';
+    } else {
+      promptsEmpty.style.display = 'none';
+      promptsContainer.style.display = 'flex';
+      promptsContainer.innerHTML = '';
+      
+      promptsToRender.forEach(prompt => {
+        const categoryName = prompt.categories?.name || 'Uncategorized';
+        const col = document.createElement('div');
+        col.className = 'col-12 mb-4';
+        col.innerHTML = `
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="card-title mb-0">${prompt.title}</h5>
+              </div>
+              <p class="card-text text-muted small">Category: ${categoryName}</p>
+              <div class="mb-3">
+                <strong>Prompt:</strong>
+                <p class="bg-light p-2 rounded border" style="white-space: pre-wrap;">${prompt.prompt_text}</p>
+              </div>
+              ${prompt.result_text ? `
+              <div class="mb-3">
+                <strong>Result:</strong>
+                <div class="bg-light p-2 rounded border" style="white-space: pre-wrap;">${prompt.result_text}</div>
+              </div>
+              ` : ''}
+              <div class="d-flex gap-2">
+                <button class="btn btn-outline-danger btn-sm delete-prompt-btn" data-id="${prompt.id}">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+        promptsContainer.appendChild(col);
+      });
+
+      // Add delete listeners
+      document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          if (confirm('Are you sure you want to delete this prompt?')) {
+            const promptId = e.currentTarget.getAttribute('data-id');
+            try {
+              const { error } = await supabase.from('prompts').delete().eq('id', promptId);
+              if (error) throw error;
+              fetchPrompts(); // Refresh list
+            } catch (err) {
+              console.error('Error deleting prompt:', err.message);
+              alert('Failed to delete prompt.');
+            }
+          }
+        });
+      });
+    }
+  }
+
+  // Initialize
+  fetchCategoriesForSelect();
+  fetchPrompts();
 
   logoutBtn.addEventListener('click', async (e) => {
     e.preventDefault();
@@ -47,17 +172,74 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  // Add Prompt Modal Logic
+  const addPromptModal = new window.bootstrap.Modal(document.getElementById('addPromptModal'));
+  const savePromptBtn = document.getElementById('savePromptBtn');
+  const promptCategorySelect = document.getElementById('promptCategorySelect');
+  const promptTitleInput = document.getElementById('promptTitle');
+  const promptTextInput = document.getElementById('promptText');
+  const promptResultInput = document.getElementById('promptResult');
+
   createPromptBtn.addEventListener('click', () => {
-    console.log('Create Prompt clicked');
-    // TODO: Implement create prompt modal/logic
-    alert('Create Prompt functionality to be implemented.');
+    // Clear form
+    promptTitleInput.value = '';
+    promptTextInput.value = '';
+    promptResultInput.value = '';
+    
+    if (categoryId) {
+      promptCategorySelect.value = categoryId;
+    }
+    
+    addPromptModal.show();
+  });
+
+  savePromptBtn.addEventListener('click', async () => {
+    const title = promptTitleInput.value.trim();
+    const text = promptTextInput.value.trim();
+    const result = promptResultInput.value.trim();
+    const selectedCategoryId = promptCategorySelect.value;
+
+    if (!title || !text || !selectedCategoryId) {
+      alert('Please fill in the required fields (Category, Title, and Prompt Text).');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('prompts')
+        .insert([{ 
+          title: title, 
+          prompt_text: text, 
+          result_text: result,
+          category_id: selectedCategoryId,
+          user_id: currentUser.id 
+        }]);
+
+      if (error) throw error;
+
+      addPromptModal.hide();
+      fetchPrompts(); // Refresh the list
+      
+      alert('Prompt saved successfully!');
+    } catch (error) {
+      console.error('Error creating prompt:', error.message);
+      alert('Failed to create prompt: ' + error.message);
+    }
   });
 
   searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();
-    console.log('Searching for:', searchTerm);
-    // TODO: Implement search filtering logic
+    if (!searchTerm) {
+      renderPrompts(allPrompts);
+      return;
+    }
+    
+    const filteredPrompts = allPrompts.filter(prompt => 
+      prompt.title.toLowerCase().includes(searchTerm) || 
+      prompt.prompt_text.toLowerCase().includes(searchTerm) ||
+      (prompt.result_text && prompt.result_text.toLowerCase().includes(searchTerm))
+    );
+    
+    renderPrompts(filteredPrompts);
   });
-
-  // TODO: Fetch prompts from Supabase and render them dynamically
 });

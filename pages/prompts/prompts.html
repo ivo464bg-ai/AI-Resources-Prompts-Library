@@ -64,40 +64,68 @@
       </div>
     </div>
 
+    <!-- Loading Spinner for Prompts -->
+    <div id="promptsLoading" class="text-center my-5" style="display: none;">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
     <div class="row" id="promptsContainer">
       <!-- Prompts will be dynamically loaded here -->
-      <div class="col-12 mb-4">
-        <div class="card shadow-sm">
-          <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <h5 class="card-title mb-0">Refactor Legacy Code</h5>
-              <span class="badge bg-success">Active</span>
-            </div>
-            <p class="card-text text-muted small">Category: Code Analysis</p>
-            <div class="mb-3">
-              <strong>Prompt:</strong>
-              <p class="bg-light p-2 rounded border">Please refactor the following legacy code to use modern ES6+ features and improve readability...</p>
-            </div>
-            <div class="mb-3">
-              <strong>Result:</strong>
-              <div class="bg-light p-2 rounded border">Here is the refactored code...</div>
-            </div>
-            <div class="d-flex gap-2">
-              <button class="btn btn-outline-primary btn-sm">Edit</button>
-              <button class="btn btn-outline-danger btn-sm">Delete</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    </div>
+
+    <!-- Empty State for Prompts -->
+    <div id="promptsEmpty" class="text-center text-muted my-5" style="display: none;">
+      <h5>No prompts found.</h5>
+      <p>Create your first prompt!</p>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer class="bg-dark text-white text-center py-3 mt-auto fixed-bottom">
+  <footer class="bg-dark text-white text-center py-3 mt-auto">
     <div class="container">
       <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
     </div>
   </footer>
+
+  <!-- Add New Prompt Modal -->
+  <div class="modal fade" id="addPromptModal" tabindex="-1" aria-labelledby="addPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addPromptModalLabel">Add New Prompt</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="addPromptForm">
+            <div class="mb-3">
+              <label for="promptCategorySelect" class="form-label">Category</label>
+              <select class="form-select" id="promptCategorySelect" required>
+                <option value="" disabled selected>Select a category</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="promptTitle" class="form-label">Title</label>
+              <input type="text" class="form-control" id="promptTitle" required>
+            </div>
+            <div class="mb-3">
+              <label for="promptText" class="form-label">Prompt Text</label>
+              <textarea class="form-control" id="promptText" rows="4" required></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="promptResult" class="form-label">Result Text (Optional)</label>
+              <textarea class="form-control" id="promptResult" rows="4"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-success" id="savePromptBtn">Save Prompt</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Bootstrap JS Bundle with Popper -->
   <script src="../../node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
