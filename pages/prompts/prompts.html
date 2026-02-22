@@ -117,6 +117,10 @@
               <label for="promptResult" class="form-label">Result Text (Optional)</label>
               <textarea class="form-control" id="promptResult" rows="4"></textarea>
             </div>
+            <div class="mb-3">
+              <label for="promptFile" class="form-label">Attachment (Optional)</label>
+              <input type="file" id="promptFile" class="form-control" accept="image/*,.pdf,.txt">
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -149,6 +153,13 @@
             <div class="mb-3">
               <label for="editPromptResult" class="form-label">Result Text</label>
               <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editPromptFile" class="form-label">Attachment (Optional)</label>
+              <input type="file" id="editPromptFile" class="form-control" accept="image/*,.pdf,.txt">
+              <div id="currentAttachmentContainer" class="mt-2" style="display: none;">
+                <small class="text-muted">Current attachment: <a href="#" id="currentAttachmentLink" target="_blank">View</a></small>
+              </div>
             </div>
           </form>
         </div>

@@ -142,6 +142,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <div class="bg-light p-2 rounded border" style="white-space: pre-wrap;">${prompt.result_text}</div>
               </div>
               ` : ''}
+              ${prompt.file_url ? `
+              <div class="mb-3">
+                <button class="btn btn-sm btn-outline-secondary view-attachment-btn" data-url="${prompt.file_url}">📎 View Attachment</button>
+              </div>
+              ` : ''}
               <div class="d-flex gap-2">
                 <button class="btn btn-outline-primary btn-sm view-prompt-btn" data-id="${prompt.id}">View Details</button>
                 <button class="btn btn-outline-danger btn-sm delete-prompt-btn" data-id="${prompt.id}">Delete</button>
@@ -150,6 +155,20 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
         `;
         promptsContainer.appendChild(col);
+      });
+
+      // Add attachment listeners
+      document.querySelectorAll('.view-attachment-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const fileUrl = e.currentTarget.getAttribute('data-url');
+          const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(fileUrl, 3600);
+          if (data) {
+            window.open(data.signedUrl, '_blank');
+          } else {
+            console.error('Error getting signed URL:', error);
+            alert('Failed to load attachment.');
+          }
+        });
       });
 
       // Add view details listeners
@@ -204,12 +223,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptTitleInput = document.getElementById('promptTitle');
   const promptTextInput = document.getElementById('promptText');
   const promptResultInput = document.getElementById('promptResult');
+  const promptFileInput = document.getElementById('promptFile');
 
   createPromptBtn.addEventListener('click', () => {
     // Clear form
     promptTitleInput.value = '';
     promptTextInput.value = '';
     promptResultInput.value = '';
+    promptFileInput.value = '';
     
     if (categoryId) {
       promptCategorySelect.value = categoryId;
@@ -223,6 +244,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
     const selectedCategoryId = promptCategorySelect.value;
+    const file = promptFileInput.files[0];
 
     if (!title || !text || !selectedCategoryId) {
       alert('Please fill in the required fields (Category, Title, and Prompt Text).');
@@ -230,12 +252,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+      let fileUrl = null;
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${currentUser.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('prompt-attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+        fileUrl = filePath;
+      }
+
       const { error } = await supabase
         .from('prompts')
         .insert([{ 
           title: title, 
           prompt_text: text, 
           result_text: result,
+          file_url: fileUrl,
           category_id: selectedCategoryId,
           user_id: currentUser.id 
         }]);
@@ -259,12 +296,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const editPromptTitleInput = document.getElementById('editPromptTitle');
   const editPromptTextInput = document.getElementById('editPromptText');
   const editPromptResultInput = document.getElementById('editPromptResult');
+  const editPromptFileInput = document.getElementById('editPromptFile');
+  const currentAttachmentContainer = document.getElementById('currentAttachmentContainer');
+  const currentAttachmentLink = document.getElementById('currentAttachmentLink');
 
-  function openViewPromptModal(prompt) {
+  async function openViewPromptModal(prompt) {
     editPromptIdInput.value = prompt.id;
     editPromptTitleInput.value = prompt.title;
     editPromptTextInput.value = prompt.prompt_text;
     editPromptResultInput.value = prompt.result_text || '';
+    editPromptFileInput.value = '';
+    
+    if (prompt.file_url) {
+      currentAttachmentContainer.style.display = 'block';
+      const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(prompt.file_url, 3600);
+      if (data) {
+        currentAttachmentLink.href = data.signedUrl;
+      } else {
+        currentAttachmentLink.href = '#';
+      }
+    } else {
+      currentAttachmentContainer.style.display = 'none';
+    }
     
     viewPromptModal.show();
   }
@@ -274,6 +327,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const title = editPromptTitleInput.value.trim();
     const text = editPromptTextInput.value.trim();
     const result = editPromptResultInput.value.trim();
+    const file = editPromptFileInput.files[0];
 
     if (!title || !text) {
       alert('Please fill in the required fields (Title and Prompt Text).');
@@ -281,13 +335,28 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+      let updateData = {
+        title: title, 
+        prompt_text: text, 
+        result_text: result 
+      };
+
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${currentUser.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('prompt-attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+        updateData.file_url = filePath;
+      }
+
       const { error } = await supabase
         .from('prompts')
-        .update({ 
-          title: title, 
-          prompt_text: text, 
-          result_text: result 
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;

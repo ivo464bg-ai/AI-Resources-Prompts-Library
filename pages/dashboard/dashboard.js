@@ -144,12 +144,19 @@ document.addEventListener('DOMContentLoaded', async () => {
           const categoryName = prompt.categories?.name || 'Uncategorized';
           const col = document.createElement('div');
           col.className = 'col';
+          
+          let attachmentBtnHtml = '';
+          if (prompt.file_url) {
+            attachmentBtnHtml = `<button class="btn btn-sm btn-outline-secondary view-attachment-btn mt-2" data-url="${prompt.file_url}">📎 View Attachment</button>`;
+          }
+
           col.innerHTML = `
             <div class="card h-100 shadow-sm">
               <div class="card-body">
                 <h5 class="card-title">${prompt.title}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">📁 ${categoryName}</h6>
                 <p class="card-text text-truncate">${prompt.prompt_text}</p>
+                ${attachmentBtnHtml}
               </div>
               <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
                 <button class="btn btn-sm btn-outline-primary view-prompt-btn" data-id="${prompt.id}">View Details</button>
@@ -158,6 +165,20 @@ document.addEventListener('DOMContentLoaded', async () => {
             </div>
           `;
           promptsContainer.appendChild(col);
+        });
+
+        // Add attachment listeners
+        document.querySelectorAll('.view-attachment-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const fileUrl = e.currentTarget.getAttribute('data-url');
+            const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(fileUrl, 3600);
+            if (data) {
+              window.open(data.signedUrl, '_blank');
+            } else {
+              console.error('Error getting signed URL:', error);
+              alert('Failed to load attachment.');
+            }
+          });
         });
 
         // Add view details listeners
@@ -240,6 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptTitleInput = document.getElementById('promptTitle');
   const promptTextInput = document.getElementById('promptText');
   const promptResultInput = document.getElementById('promptResult');
+  const promptFileInput = document.getElementById('promptFile');
 
   addPromptBtn.addEventListener('click', () => {
     if (!activeCategoryId) {
@@ -251,6 +273,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     promptTitleInput.value = '';
     promptTextInput.value = '';
     promptResultInput.value = '';
+    promptFileInput.value = '';
     
     addPromptModal.show();
   });
@@ -259,6 +282,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const title = promptTitleInput.value.trim();
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
+    const file = promptFileInput.files[0];
 
     if (!title || !text) {
       alert('Please fill in the required fields (Title and Prompt Text).');
@@ -269,12 +293,27 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
+      let fileUrl = null;
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('prompt-attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+        fileUrl = filePath;
+      }
+
       const { error } = await supabase
         .from('prompts')
         .insert([{ 
           title: title, 
           prompt_text: text, 
           result_text: result,
+          file_url: fileUrl,
           category_id: activeCategoryId,
           user_id: user.id 
         }]);
@@ -299,12 +338,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const editPromptTitleInput = document.getElementById('editPromptTitle');
   const editPromptTextInput = document.getElementById('editPromptText');
   const editPromptResultInput = document.getElementById('editPromptResult');
+  const editPromptFileInput = document.getElementById('editPromptFile');
+  const currentAttachmentContainer = document.getElementById('currentAttachmentContainer');
+  const currentAttachmentLink = document.getElementById('currentAttachmentLink');
 
-  function openViewPromptModal(prompt) {
+  async function openViewPromptModal(prompt) {
     editPromptIdInput.value = prompt.id;
     editPromptTitleInput.value = prompt.title;
     editPromptTextInput.value = prompt.prompt_text;
     editPromptResultInput.value = prompt.result_text || '';
+    editPromptFileInput.value = '';
+    
+    if (prompt.file_url) {
+      currentAttachmentContainer.style.display = 'block';
+      const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(prompt.file_url, 3600);
+      if (data) {
+        currentAttachmentLink.href = data.signedUrl;
+      } else {
+        currentAttachmentLink.href = '#';
+      }
+    } else {
+      currentAttachmentContainer.style.display = 'none';
+    }
     
     viewPromptModal.show();
   }
@@ -314,6 +369,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const title = editPromptTitleInput.value.trim();
     const text = editPromptTextInput.value.trim();
     const result = editPromptResultInput.value.trim();
+    const file = editPromptFileInput.files[0];
 
     if (!title || !text) {
       alert('Please fill in the required fields (Title and Prompt Text).');
@@ -321,13 +377,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      let updateData = {
+        title: title, 
+        prompt_text: text, 
+        result_text: result 
+      };
+
+      if (file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('prompt-attachments')
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+        updateData.file_url = filePath;
+      }
+
       const { error } = await supabase
         .from('prompts')
-        .update({ 
-          title: title, 
-          prompt_text: text, 
-          result_text: result 
-        })
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;
