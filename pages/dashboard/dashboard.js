@@ -140,23 +140,57 @@ document.addEventListener('DOMContentLoaded', async () => {
       } else {
         promptsContainer.style.display = 'flex';
         promptsContainer.innerHTML = '';
+        
+        // Generate signed URLs for images
+        const imagePaths = [];
+        prompts.forEach(p => {
+          if (p.file_url && p.file_url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+            imagePaths.push(p.file_url);
+          }
+        });
+          
+        let signedUrlsMap = {};
+        if (imagePaths.length > 0) {
+          const { data: signedUrlsData, error: signedUrlsError } = await supabase.storage
+            .from('prompt-attachments')
+            .createSignedUrls(imagePaths, 3600);
+            
+          if (!signedUrlsError && signedUrlsData) {
+            signedUrlsData.forEach(item => {
+              if (!item.error) {
+                signedUrlsMap[item.path] = item.signedUrl;
+              }
+            });
+          }
+        }
+
         prompts.forEach(prompt => {
           const categoryName = prompt.categories?.name || 'Uncategorized';
           const col = document.createElement('div');
           col.className = 'col';
           
           let attachmentBtnHtml = '';
+          let imagePreviewHtml = '';
+          
           if (prompt.file_url) {
-            attachmentBtnHtml = `<button class="btn btn-sm btn-outline-secondary view-attachment-btn mt-2" data-url="${prompt.file_url}">📎 View Attachment</button>`;
+            const isImage = prompt.file_url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+            if (isImage && signedUrlsMap[prompt.file_url]) {
+              imagePreviewHtml += `<img src="${signedUrlsMap[prompt.file_url]}" class="card-img-top mb-2" alt="Attachment Preview" style="max-height: 150px; object-fit: cover;">`;
+            } else {
+              attachmentBtnHtml += `<button class="btn btn-sm btn-outline-secondary view-attachment-btn mt-2 me-2" data-url="${prompt.file_url}">📎 View Attachment</button>`;
+            }
           }
 
           col.innerHTML = `
             <div class="card h-100 shadow-sm">
+              ${imagePreviewHtml ? `<div class="p-2 d-flex flex-wrap gap-2">${imagePreviewHtml}</div>` : ''}
               <div class="card-body">
                 <h5 class="card-title">${prompt.title}</h5>
                 <h6 class="card-subtitle mb-2 text-muted">📁 ${categoryName}</h6>
                 <p class="card-text text-truncate">${prompt.prompt_text}</p>
-                ${attachmentBtnHtml}
+                <div class="d-flex flex-wrap">
+                  ${attachmentBtnHtml}
+                </div>
               </div>
               <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
                 <button class="btn btn-sm btn-outline-primary view-prompt-btn" data-id="${prompt.id}">View Details</button>
@@ -198,6 +232,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (confirm('Are you sure you want to delete this prompt?')) {
               const promptId = e.currentTarget.getAttribute('data-id');
               try {
+                const prompt = prompts.find(p => p.id === promptId);
+                if (prompt && prompt.file_url) {
+                  await supabase.storage.from('prompt-attachments').remove([prompt.file_url]);
+                }
                 const { error } = await supabase.from('prompts').delete().eq('id', promptId);
                 if (error) throw error;
                 fetchPrompts(); // Refresh list
@@ -282,7 +320,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const title = promptTitleInput.value.trim();
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
-    const file = promptFileInput.files[0];
+    const files = promptFileInput.files;
 
     if (!title || !text) {
       alert('Please fill in the required fields (Title and Prompt Text).');
@@ -294,7 +332,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (userError || !user) throw new Error('User not authenticated');
 
       let fileUrl = null;
-      if (file) {
+
+      // Upload file if exists
+      if (files && files.length > 0) {
+        const file = files[0];
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
@@ -307,18 +348,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         fileUrl = filePath;
       }
 
-      const { error } = await supabase
+      // Insert prompt
+      const { error: promptError } = await supabase
         .from('prompts')
         .insert([{ 
           title: title, 
           prompt_text: text, 
           result_text: result,
-          file_url: fileUrl,
           category_id: activeCategoryId,
-          user_id: user.id 
+          user_id: user.id,
+          file_url: fileUrl
         }]);
 
-      if (error) throw error;
+      if (promptError) throw promptError;
 
       addPromptModal.hide();
       fetchPrompts(); // Refresh the list
@@ -335,28 +377,46 @@ document.addEventListener('DOMContentLoaded', async () => {
   const viewPromptModal = new window.bootstrap.Modal(document.getElementById('viewPromptModal'));
   const updatePromptBtn = document.getElementById('updatePromptBtn');
   const editPromptIdInput = document.getElementById('editPromptId');
+  const editPromptOldFileUrlInput = document.getElementById('editPromptOldFileUrl');
   const editPromptTitleInput = document.getElementById('editPromptTitle');
   const editPromptTextInput = document.getElementById('editPromptText');
   const editPromptResultInput = document.getElementById('editPromptResult');
   const editPromptFileInput = document.getElementById('editPromptFile');
   const currentAttachmentContainer = document.getElementById('currentAttachmentContainer');
-  const currentAttachmentLink = document.getElementById('currentAttachmentLink');
+  const currentAttachmentsList = document.getElementById('currentAttachmentsList');
 
   async function openViewPromptModal(prompt) {
     editPromptIdInput.value = prompt.id;
+    editPromptOldFileUrlInput.value = prompt.file_url || '';
     editPromptTitleInput.value = prompt.title;
     editPromptTextInput.value = prompt.prompt_text;
     editPromptResultInput.value = prompt.result_text || '';
     editPromptFileInput.value = '';
     
+    currentAttachmentsList.innerHTML = '';
+    let hasAttachments = false;
+    
     if (prompt.file_url) {
-      currentAttachmentContainer.style.display = 'block';
+      hasAttachments = true;
       const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(prompt.file_url, 3600);
-      if (data) {
-        currentAttachmentLink.href = data.signedUrl;
-      } else {
-        currentAttachmentLink.href = '#';
-      }
+      const url = data ? data.signedUrl : '#';
+      
+      const li = document.createElement('li');
+      li.className = 'mb-2 d-flex align-items-center';
+      li.innerHTML = `
+        <a href="${url}" target="_blank" class="me-2 text-truncate" style="max-width: 200px;">Attachment</a>
+        <button type="button" class="btn btn-sm btn-outline-danger remove-attachment-btn" data-id="${prompt.id}" data-url="${prompt.file_url}">Remove</button>
+      `;
+      currentAttachmentsList.appendChild(li);
+    }
+    
+    if (hasAttachments) {
+      currentAttachmentContainer.style.display = 'block';
+      
+      // Add event listeners to remove buttons
+      document.querySelectorAll('.remove-attachment-btn').forEach(btn => {
+        btn.addEventListener('click', handleRemoveAttachment);
+      });
     } else {
       currentAttachmentContainer.style.display = 'none';
     }
@@ -364,12 +424,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     viewPromptModal.show();
   }
 
+  async function handleRemoveAttachment(e) {
+    if (confirm('Are you sure you want to remove this attachment?')) {
+      const id = e.currentTarget.getAttribute('data-id');
+      const fileUrl = e.currentTarget.getAttribute('data-url');
+      
+      try {
+        // Delete from storage
+        const { error: storageError } = await supabase.storage.from('prompt-attachments').remove([fileUrl]);
+        if (storageError) throw storageError;
+        
+        // Update database
+        const { error: dbError } = await supabase.from('prompts').update({ file_url: null }).eq('id', id);
+        if (dbError) throw dbError;
+        
+        // Remove from UI
+        e.currentTarget.closest('li').remove();
+        if (currentAttachmentsList.children.length === 0) {
+          currentAttachmentContainer.style.display = 'none';
+        }
+        
+        editPromptOldFileUrlInput.value = '';
+        
+        alert('Attachment removed successfully!');
+        fetchPrompts(); // Refresh the list in background
+      } catch (error) {
+        console.error('Error removing attachment:', error.message);
+        alert('Failed to remove attachment: ' + error.message);
+      }
+    }
+  }
+
   updatePromptBtn.addEventListener('click', async () => {
     const id = editPromptIdInput.value;
+    const oldFileUrl = editPromptOldFileUrlInput.value;
     const title = editPromptTitleInput.value.trim();
     const text = editPromptTextInput.value.trim();
     const result = editPromptResultInput.value.trim();
-    const file = editPromptFileInput.files[0];
+    const files = editPromptFileInput.files;
 
     if (!title || !text) {
       alert('Please fill in the required fields (Title and Prompt Text).');
@@ -386,7 +478,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         result_text: result 
       };
 
-      if (file) {
+      // Upload new file if exists
+      if (files && files.length > 0) {
+        const file = files[0];
         const fileExt = file.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
         const filePath = `${user.id}/${fileName}`;
@@ -396,6 +490,12 @@ document.addEventListener('DOMContentLoaded', async () => {
           .upload(filePath, file);
 
         if (uploadError) throw uploadError;
+        
+        // Delete old file if it exists and new upload was successful
+        if (oldFileUrl) {
+          await supabase.storage.from('prompt-attachments').remove([oldFileUrl]);
+        }
+        
         updateData.file_url = filePath;
       }
 

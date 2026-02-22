@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showAlert('Login successful! Redirecting...', 'success');
         setTimeout(() => {
-          window.location.href = '../dashboard/dashboard.html';
+          window.location.href = '../../index.html';
         }, 1000);
 
       } else {
@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showAlert('Registration successful! Redirecting...', 'success');
         setTimeout(() => {
-          window.location.href = '../dashboard/dashboard.html';
+          window.location.href = '../../index.html';
         }, 1000);
       }
     } catch (error) {

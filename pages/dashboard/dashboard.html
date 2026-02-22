@@ -187,6 +187,7 @@
         <div class="modal-body">
           <form id="viewPromptForm">
             <input type="hidden" id="editPromptId">
+            <input type="hidden" id="editPromptOldFileUrl">
             <div class="mb-3">
               <label for="editPromptTitle" class="form-label">Title</label>
               <input type="text" class="form-control" id="editPromptTitle" required>
@@ -200,10 +201,11 @@
               <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
             </div>
             <div class="mb-3">
-              <label for="editPromptFile" class="form-label">Attachment (Optional)</label>
+              <label for="editPromptFile" class="form-label">Update Attachment (Optional)</label>
               <input type="file" id="editPromptFile" class="form-control" accept="image/*,.pdf,.txt">
               <div id="currentAttachmentContainer" class="mt-2" style="display: none;">
-                <small class="text-muted">Current attachment: <a href="#" id="currentAttachmentLink" target="_blank">View</a></small>
+                <small class="text-muted">Current attachment:</small>
+                <ul id="currentAttachmentsList" class="list-unstyled mt-1"></ul>
               </div>
             </div>
           </form>
