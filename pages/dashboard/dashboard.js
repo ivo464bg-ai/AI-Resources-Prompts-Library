@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   const logoutBtn = document.getElementById('logoutBtn');
   const createCategoryBtn = document.getElementById('createCategoryBtn');
   const addPromptBtn = document.getElementById('addPromptBtn');
+  const navDashboard = document.getElementById('nav-dashboard');
+  const navLogin = document.getElementById('nav-login');
+  const navRegister = document.getElementById('nav-register');
+  const navLogout = document.getElementById('nav-logout');
+  const navUserEmail = document.getElementById('nav-user-email');
+  const navDivider = document.getElementById('nav-divider');
   
   const categoriesLoading = document.getElementById('categoriesLoading');
   const categoriesList = document.getElementById('categoriesList');
@@ -15,37 +21,57 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // 1. Check if user is logged in
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-  
-  if (sessionError || !session) {
-    // Redirect to login if not authenticated
-    window.location.href = '../login/login.html';
-    return;
-  }
+  const isAuthenticated = !sessionError && !!session;
+  const currentUserId = session?.user?.id || null;
 
-  // Display user email
+  // Navbar and identity
   const userEmailSpan = document.getElementById('user-email');
-  if (userEmailSpan) {
+  if (isAuthenticated && userEmailSpan) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user) {
-      window.location.href = '../login/login.html';
-      return;
-    }
-    if (user.email) {
+    if (!userError && user?.email) {
       userEmailSpan.textContent = user.email;
     }
   }
 
-  // 2. Logout functionality
-  logoutBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error logging out:', error.message);
-      alert('Failed to log out.');
-    } else {
-      window.location.href = '../../index.html';
+  if (isAuthenticated) {
+    navDashboard.style.display = 'block';
+    navLogin.style.display = 'none';
+    navRegister.style.display = 'none';
+    navLogout.style.display = 'block';
+    navUserEmail.style.display = 'block';
+    if (navDivider) {
+      navDivider.style.setProperty('display', 'flex', 'important');
     }
-  });
+  } else {
+    navDashboard.style.display = 'none';
+    navLogin.style.display = 'block';
+    navRegister.style.display = 'block';
+    navLogout.style.display = 'none';
+    navUserEmail.style.display = 'none';
+    if (navDivider) {
+      navDivider.style.setProperty('display', 'none', 'important');
+    }
+    if (createCategoryBtn) {
+      createCategoryBtn.style.display = 'none';
+    }
+    if (addPromptBtn) {
+      addPromptBtn.style.display = 'none';
+    }
+  }
+
+  // 2. Logout functionality
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Error logging out:', error.message);
+        alert('Failed to log out.');
+      } else {
+        window.location.href = '../../index.html';
+      }
+    });
+  }
 
   let activeCategoryId = null;
 
@@ -56,10 +82,16 @@ document.addEventListener('DOMContentLoaded', async () => {
       categoriesList.style.display = 'none';
       categoriesEmpty.style.display = 'none';
 
-      const { data: categories, error } = await supabase
+      let categoriesQuery = supabase
         .from('categories')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (isAuthenticated && currentUserId) {
+        categoriesQuery = categoriesQuery.eq('user_id', currentUserId);
+      }
+
+      const { data: categories, error } = await categoriesQuery;
 
       if (error) throw error;
 
@@ -124,6 +156,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         .from('prompts')
         .select('*, categories(name)')
         .order('created_at', { ascending: false });
+
+      if (isAuthenticated && currentUserId) {
+        query = query.eq('user_id', currentUserId);
+      }
 
       if (activeCategoryId) {
         query = query.eq('category_id', activeCategoryId);
@@ -194,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               </div>
               <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
                 <button class="btn btn-sm btn-outline-primary view-prompt-btn" data-id="${prompt.id}">View Details</button>
-                <button class="btn btn-sm btn-outline-danger delete-prompt-btn" data-id="${prompt.id}">Delete</button>
+                ${isAuthenticated ? `<button class="btn btn-sm btn-outline-danger delete-prompt-btn" data-id="${prompt.id}">Delete</button>` : ''}
               </div>
             </div>
           `;
@@ -226,26 +262,28 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
         });
 
-        // Add delete listeners
-        document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
-          btn.addEventListener('click', async (e) => {
-            if (confirm('Are you sure you want to delete this prompt?')) {
-              const promptId = e.currentTarget.getAttribute('data-id');
-              try {
-                const prompt = prompts.find(p => p.id === promptId);
-                if (prompt && prompt.file_url) {
-                  await supabase.storage.from('prompt-attachments').remove([prompt.file_url]);
+        if (isAuthenticated) {
+          // Add delete listeners
+          document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              if (confirm('Are you sure you want to delete this prompt?')) {
+                const promptId = e.currentTarget.getAttribute('data-id');
+                try {
+                  const prompt = prompts.find(p => p.id === promptId);
+                  if (prompt && prompt.file_url) {
+                    await supabase.storage.from('prompt-attachments').remove([prompt.file_url]);
+                  }
+                  const { error } = await supabase.from('prompts').delete().eq('id', promptId);
+                  if (error) throw error;
+                  fetchPrompts(); // Refresh list
+                } catch (err) {
+                  console.error('Error deleting prompt:', err.message);
+                  alert('Failed to delete prompt.');
                 }
-                const { error } = await supabase.from('prompts').delete().eq('id', promptId);
-                if (error) throw error;
-                fetchPrompts(); // Refresh list
-              } catch (err) {
-                console.error('Error deleting prompt:', err.message);
-                alert('Failed to delete prompt.');
               }
-            }
+            });
           });
-        });
+        }
       }
     } catch (error) {
       console.error('Error fetching prompts:', error.message);
@@ -264,12 +302,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveCategoryBtn = document.getElementById('saveCategoryBtn');
   const categoryNameInput = document.getElementById('categoryName');
 
-  createCategoryBtn.addEventListener('click', () => {
-    categoryNameInput.value = '';
-    createCategoryModal.show();
-  });
+  if (isAuthenticated && createCategoryBtn) {
+    createCategoryBtn.addEventListener('click', () => {
+      categoryNameInput.value = '';
+      createCategoryModal.show();
+    });
+  }
 
   saveCategoryBtn.addEventListener('click', async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     const name = categoryNameInput.value.trim();
     if (!name) {
       alert('Please enter a category name.');
@@ -301,22 +345,28 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptResultInput = document.getElementById('promptResult');
   const promptFileInput = document.getElementById('promptFile');
 
-  addPromptBtn.addEventListener('click', () => {
-    if (!activeCategoryId) {
-      alert('Please select a category first to add a prompt.');
-      return;
-    }
-    
-    // Clear form
-    promptTitleInput.value = '';
-    promptTextInput.value = '';
-    promptResultInput.value = '';
-    promptFileInput.value = '';
-    
-    addPromptModal.show();
-  });
+  if (isAuthenticated && addPromptBtn) {
+    addPromptBtn.addEventListener('click', () => {
+      if (!activeCategoryId) {
+        alert('Please select a category first to add a prompt.');
+        return;
+      }
+      
+      // Clear form
+      promptTitleInput.value = '';
+      promptTextInput.value = '';
+      promptResultInput.value = '';
+      promptFileInput.value = '';
+      
+      addPromptModal.show();
+    });
+  }
 
   savePromptBtn.addEventListener('click', async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     const title = promptTitleInput.value.trim();
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
@@ -386,12 +436,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentAttachmentsList = document.getElementById('currentAttachmentsList');
 
   async function openViewPromptModal(prompt) {
+    const isReadOnlyMode = !isAuthenticated;
+
     editPromptIdInput.value = prompt.id;
     editPromptOldFileUrlInput.value = prompt.file_url || '';
     editPromptTitleInput.value = prompt.title;
     editPromptTextInput.value = prompt.prompt_text;
     editPromptResultInput.value = prompt.result_text || '';
     editPromptFileInput.value = '';
+
+    editPromptTitleInput.readOnly = isReadOnlyMode;
+    editPromptTextInput.readOnly = isReadOnlyMode;
+    editPromptResultInput.readOnly = isReadOnlyMode;
+    editPromptFileInput.disabled = isReadOnlyMode;
+    updatePromptBtn.style.display = isReadOnlyMode ? 'none' : 'inline-block';
     
     currentAttachmentsList.innerHTML = '';
     let hasAttachments = false;
@@ -405,7 +463,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       li.className = 'mb-2 d-flex align-items-center';
       li.innerHTML = `
         <a href="${url}" target="_blank" class="me-2 text-truncate" style="max-width: 200px;">Attachment</a>
-        <button type="button" class="btn btn-sm btn-outline-danger remove-attachment-btn" data-id="${prompt.id}" data-url="${prompt.file_url}">Remove</button>
+        ${isReadOnlyMode ? '' : `<button type="button" class="btn btn-sm btn-outline-danger remove-attachment-btn" data-id="${prompt.id}" data-url="${prompt.file_url}">Remove</button>`}
       `;
       currentAttachmentsList.appendChild(li);
     }
@@ -413,10 +471,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (hasAttachments) {
       currentAttachmentContainer.style.display = 'block';
       
-      // Add event listeners to remove buttons
-      document.querySelectorAll('.remove-attachment-btn').forEach(btn => {
-        btn.addEventListener('click', handleRemoveAttachment);
-      });
+      if (!isReadOnlyMode) {
+        // Add event listeners to remove buttons
+        document.querySelectorAll('.remove-attachment-btn').forEach(btn => {
+          btn.addEventListener('click', handleRemoveAttachment);
+        });
+      }
     } else {
       currentAttachmentContainer.style.display = 'none';
     }
@@ -456,6 +516,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   updatePromptBtn.addEventListener('click', async () => {
+    if (!isAuthenticated) {
+      return;
+    }
+
     const id = editPromptIdInput.value;
     const oldFileUrl = editPromptOldFileUrlInput.value;
     const title = editPromptTitleInput.value.trim();

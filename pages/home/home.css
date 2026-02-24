@@ -1,11 +1,17 @@
-/* Landing Page Specific Styles */
-main {
-  min-height: calc(100vh - 160px); /* Adjust based on navbar and footer height */
+/* Home Page Specific Styles */
+.card {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-.display-4 {
-  font-weight: 600;
-  color: var(--primary-color);
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 .5rem 1rem rgba(0,0,0,.15) !important;
+}
+
+.active-category {
+  background-color: #e9ecef !important;
+  font-weight: bold;
+  border-color: #0d6efd !important;
 }
 
 #user-email-display {

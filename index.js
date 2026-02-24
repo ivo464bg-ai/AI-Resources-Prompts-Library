@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // User is logged in
     window.location.href = './pages/home/home.html';
   } else {
-    // User is not logged in
-    window.location.href = './pages/login/login.html';
+    // User is not logged in (public showcase)
+    window.location.href = './pages/home/home.html';
   }
 });

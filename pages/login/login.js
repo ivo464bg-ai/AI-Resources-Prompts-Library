@@ -11,6 +11,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let isLoginMode = true;
 
+  function applyMode() {
+    if (isLoginMode) {
+      formTitle.textContent = 'Login';
+      submitBtn.textContent = 'Login';
+      toggleText.textContent = "Don't have an account?";
+      toggleModeBtn.textContent = 'Register here';
+    } else {
+      formTitle.textContent = 'Register';
+      submitBtn.textContent = 'Register';
+      toggleText.textContent = 'Already have an account?';
+      toggleModeBtn.textContent = 'Login here';
+    }
+  }
+
+  const modeParam = new URLSearchParams(window.location.search).get('mode');
+  if (modeParam === 'register') {
+    isLoginMode = false;
+  }
+  applyMode();
+
   // Helper function to show alerts
   function showAlert(message, type) {
     alertArea.textContent = message;
@@ -28,18 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
   toggleModeBtn.addEventListener('click', (e) => {
     e.preventDefault();
     isLoginMode = !isLoginMode;
-    
-    if (isLoginMode) {
-      formTitle.textContent = 'Login';
-      submitBtn.textContent = 'Login';
-      toggleText.textContent = "Don't have an account?";
-      toggleModeBtn.textContent = 'Register here';
-    } else {
-      formTitle.textContent = 'Register';
-      submitBtn.textContent = 'Register';
-      toggleText.textContent = 'Already have an account?';
-      toggleModeBtn.textContent = 'Login here';
-    }
+    applyMode();
     
     // Clear any existing alerts and inputs
     hideAlert();
