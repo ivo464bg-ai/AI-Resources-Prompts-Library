@@ -18,11 +18,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptsLoading = document.getElementById('promptsLoading');
   const promptsContainer = document.getElementById('promptsContainer');
   const promptsEmpty = document.getElementById('promptsEmpty');
+  const statMyPrompts = document.getElementById('stat-my-prompts');
+  const statMyCategories = document.getElementById('stat-my-categories');
+  const statMyRecent = document.getElementById('stat-my-recent');
 
   // 1. Check if user is logged in
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   const isAuthenticated = !sessionError && !!session;
   const currentUserId = session?.user?.id || null;
+
+  if (!isAuthenticated || !currentUserId) {
+    window.location.href = '../login/login.html';
+    return;
+  }
 
   // Navbar and identity
   const userEmailSpan = document.getElementById('user-email');
@@ -33,30 +41,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  if (isAuthenticated) {
-    navDashboard.style.display = 'block';
-    navLogin.style.display = 'none';
-    navRegister.style.display = 'none';
-    navLogout.style.display = 'block';
-    navUserEmail.style.display = 'block';
-    if (navDivider) {
-      navDivider.style.setProperty('display', 'flex', 'important');
-    }
-  } else {
-    navDashboard.style.display = 'none';
-    navLogin.style.display = 'block';
-    navRegister.style.display = 'block';
-    navLogout.style.display = 'none';
-    navUserEmail.style.display = 'none';
-    if (navDivider) {
-      navDivider.style.setProperty('display', 'none', 'important');
-    }
-    if (createCategoryBtn) {
-      createCategoryBtn.style.display = 'none';
-    }
-    if (addPromptBtn) {
-      addPromptBtn.style.display = 'none';
-    }
+  navDashboard.style.display = 'block';
+  navLogin.style.display = 'none';
+  navRegister.style.display = 'none';
+  navLogout.style.display = 'block';
+  navUserEmail.style.display = 'block';
+  if (navDivider) {
+    navDivider.style.setProperty('display', 'flex', 'important');
   }
 
   // 2. Logout functionality
@@ -87,13 +78,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (isAuthenticated && currentUserId) {
-        categoriesQuery = categoriesQuery.eq('user_id', currentUserId);
-      }
+      categoriesQuery = categoriesQuery.eq('user_id', currentUserId);
 
       const { data: categories, error } = await categoriesQuery;
 
       if (error) throw error;
+
+      statMyCategories.textContent = categories?.length ?? 0;
 
       categoriesLoading.style.display = 'none';
 
@@ -139,6 +130,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     } catch (error) {
       console.error('Error fetching categories:', error.message);
+      statMyCategories.textContent = '0';
       categoriesLoading.style.display = 'none';
       categoriesEmpty.style.display = 'block';
       categoriesEmpty.innerHTML = '<small class="text-danger">Failed to load categories.</small>';
@@ -157,9 +149,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         .select('*, categories(name)')
         .order('created_at', { ascending: false });
 
-      if (isAuthenticated && currentUserId) {
-        query = query.eq('user_id', currentUserId);
-      }
+      query = query.eq('user_id', currentUserId);
 
       if (activeCategoryId) {
         query = query.eq('category_id', activeCategoryId);
@@ -168,6 +158,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       const { data: prompts, error } = await query;
 
       if (error) throw error;
+
+      const allMyPromptsCount = prompts?.length ?? 0;
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const recentPromptsCount = (prompts || []).filter((prompt) => {
+        if (!prompt.created_at) return false;
+        return new Date(prompt.created_at) >= sevenDaysAgo;
+      }).length;
+
+      statMyPrompts.textContent = allMyPromptsCount;
+      statMyRecent.textContent = recentPromptsCount;
 
       promptsLoading.style.display = 'none';
 
@@ -228,9 +229,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                   ${attachmentBtnHtml}
                 </div>
               </div>
-              <div class="card-footer bg-transparent border-top-0 d-flex justify-content-between">
+              <div class="card-footer bg-transparent border-top-0 d-flex flex-wrap gap-2 justify-content-start">
                 <button class="btn btn-sm btn-outline-primary view-prompt-btn" data-id="${prompt.id}">View Details</button>
-                ${isAuthenticated ? `<button class="btn btn-sm btn-outline-danger delete-prompt-btn" data-id="${prompt.id}">Delete</button>` : ''}
+                <button class="btn btn-sm btn-outline-secondary edit-prompt-btn" data-id="${prompt.id}">Edit</button>
+                <button class="btn btn-sm btn-outline-danger delete-prompt-btn" data-id="${prompt.id}">Delete</button>
               </div>
             </div>
           `;
@@ -262,31 +264,41 @@ document.addEventListener('DOMContentLoaded', async () => {
           });
         });
 
-        if (isAuthenticated) {
-          // Add delete listeners
-          document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
-            btn.addEventListener('click', async (e) => {
-              if (confirm('Are you sure you want to delete this prompt?')) {
-                const promptId = e.currentTarget.getAttribute('data-id');
-                try {
-                  const prompt = prompts.find(p => p.id === promptId);
-                  if (prompt && prompt.file_url) {
-                    await supabase.storage.from('prompt-attachments').remove([prompt.file_url]);
-                  }
-                  const { error } = await supabase.from('prompts').delete().eq('id', promptId);
-                  if (error) throw error;
-                  fetchPrompts(); // Refresh list
-                } catch (err) {
-                  console.error('Error deleting prompt:', err.message);
-                  alert('Failed to delete prompt.');
-                }
-              }
-            });
+        document.querySelectorAll('.edit-prompt-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const promptId = e.currentTarget.getAttribute('data-id');
+            const prompt = prompts.find(p => p.id === promptId);
+            if (prompt) {
+              openViewPromptModal(prompt);
+            }
           });
-        }
+        });
+
+        // Add delete listeners
+        document.querySelectorAll('.delete-prompt-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            if (confirm('Are you sure you want to delete this prompt?')) {
+              const promptId = e.currentTarget.getAttribute('data-id');
+              try {
+                const prompt = prompts.find(p => p.id === promptId);
+                if (prompt && prompt.file_url) {
+                  await supabase.storage.from('prompt-attachments').remove([prompt.file_url]);
+                }
+                const { error } = await supabase.from('prompts').delete().eq('id', promptId);
+                if (error) throw error;
+                fetchPrompts(); // Refresh list
+              } catch (err) {
+                console.error('Error deleting prompt:', err.message);
+                alert('Failed to delete prompt.');
+              }
+            }
+          });
+        });
       }
     } catch (error) {
       console.error('Error fetching prompts:', error.message);
+      statMyPrompts.textContent = '0';
+      statMyRecent.textContent = '0';
       promptsLoading.style.display = 'none';
       promptsEmpty.style.display = 'block';
       promptsEmpty.innerHTML = '<h5 class="text-danger">Failed to load prompts.</h5>';
@@ -302,7 +314,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const saveCategoryBtn = document.getElementById('saveCategoryBtn');
   const categoryNameInput = document.getElementById('categoryName');
 
-  if (isAuthenticated && createCategoryBtn) {
+  if (createCategoryBtn) {
     createCategoryBtn.addEventListener('click', () => {
       categoryNameInput.value = '';
       createCategoryModal.show();
@@ -310,10 +322,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   saveCategoryBtn.addEventListener('click', async () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
     const name = categoryNameInput.value.trim();
     if (!name) {
       alert('Please enter a category name.');
@@ -345,7 +353,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptResultInput = document.getElementById('promptResult');
   const promptFileInput = document.getElementById('promptFile');
 
-  if (isAuthenticated && addPromptBtn) {
+  if (addPromptBtn) {
     addPromptBtn.addEventListener('click', () => {
       if (!activeCategoryId) {
         alert('Please select a category first to add a prompt.');
@@ -363,10 +371,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   savePromptBtn.addEventListener('click', async () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
     const title = promptTitleInput.value.trim();
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
@@ -516,10 +520,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   updatePromptBtn.addEventListener('click', async () => {
-    if (!isAuthenticated) {
-      return;
-    }
-
     const id = editPromptIdInput.value;
     const oldFileUrl = editPromptOldFileUrlInput.value;
     const title = editPromptTitleInput.value.trim();

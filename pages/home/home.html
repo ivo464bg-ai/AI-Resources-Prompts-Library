@@ -49,9 +49,8 @@
     <div class="row">
       <aside class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse rounded p-3 mb-4 mb-md-0" id="sidebarMenu">
         <div class="position-sticky">
-          <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+          <div class="d-flex align-items-center mb-3 border-bottom pb-2">
             <h5 class="mb-0">Categories</h5>
-            <button class="btn btn-sm btn-primary" id="createCategoryBtn" title="Add Category">+</button>
           </div>
 
           <div id="categoriesLoading" class="text-center my-3">
@@ -71,9 +70,6 @@
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
           <h1 class="h2">Saved Prompts</h1>
-          <div class="btn-toolbar mb-2 mb-md-0">
-            <button type="button" class="btn btn-sm btn-success" id="addPromptBtn">Add Prompt</button>
-          </div>
         </div>
 
         <div id="promptsLoading" class="text-center my-5">
@@ -96,65 +92,6 @@
       <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
     </div>
   </footer>
-
-  <div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="createCategoryModalLabel">Add Category</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="createCategoryForm">
-            <div class="mb-3">
-              <label for="categoryName" class="form-label">Category Name</label>
-              <input type="text" class="form-control" id="categoryName" required>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" id="saveCategoryBtn">Save Category</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal fade" id="addPromptModal" tabindex="-1" aria-labelledby="addPromptModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addPromptModalLabel">Add Prompt</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="addPromptForm">
-            <input type="hidden" id="promptCategoryId">
-            <div class="mb-3">
-              <label for="promptTitle" class="form-label">Title</label>
-              <input type="text" class="form-control" id="promptTitle" required>
-            </div>
-            <div class="mb-3">
-              <label for="promptText" class="form-label">Prompt Text</label>
-              <textarea class="form-control" id="promptText" rows="4" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="promptResult" class="form-label">Result Text (Optional)</label>
-              <textarea class="form-control" id="promptResult" rows="4"></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="promptFile" class="form-label">Attachment (Optional)</label>
-              <input type="file" id="promptFile" class="form-control" accept="image/*,.pdf,.txt">
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-success" id="savePromptBtn">Save Prompt</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="modal fade" id="viewPromptModal" tabindex="-1" aria-labelledby="viewPromptModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -180,7 +117,7 @@
               <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
             </div>
             <div class="mb-3">
-              <label for="editPromptFile" class="form-label">Update Attachment (Optional)</label>
+              <label for="editPromptFile" class="form-label">Attachment</label>
               <input type="file" id="editPromptFile" class="form-control" accept="image/*,.pdf,.txt">
               <div id="currentAttachmentContainer" class="mt-2" style="display: none;">
                 <small class="text-muted">Current attachment:</small>
@@ -191,7 +128,6 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary" id="updatePromptBtn">Save Changes</button>
         </div>
       </div>
     </div>
