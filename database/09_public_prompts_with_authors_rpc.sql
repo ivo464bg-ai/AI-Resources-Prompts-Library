@@ -33,7 +33,7 @@ as $$
   left join public.categories c on c.id = p.category_id
   left join auth.users u on u.id = p.user_id
   where p_category_id is null or p.category_id = p_category_id
-  order by p.created_at desc;
+  order by p.created_at asc;
 $$;
 
 revoke all on function public.get_public_prompts_with_authors(uuid) from public;

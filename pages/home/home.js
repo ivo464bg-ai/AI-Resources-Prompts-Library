@@ -182,9 +182,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       promptsContainer.style.display = 'none';
       promptsEmpty.style.display = 'none';
 
-      const { data: prompts, error } = await supabase.rpc('get_public_prompts_with_authors', {
-        p_category_id: activeCategoryId,
-      });
+      const { data: prompts, error } = await supabase
+        .rpc('get_public_prompts_with_authors', {
+          p_category_id: activeCategoryId,
+        })
+        .order('created_at', { ascending: true });
       if (error) throw error;
 
       promptsLoading.style.display = 'none';
