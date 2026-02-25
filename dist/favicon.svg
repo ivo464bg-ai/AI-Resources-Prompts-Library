@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AI Prompt Library favicon">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#2563EB" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#g)" />
+  <path d="M20 24L30 32L20 40" fill="none" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+  <rect x="34" y="38" width="12" height="4" rx="2" fill="#FFFFFF" />
+  <path d="M44 16L45.8 20.2L50 22L45.8 23.8L44 28L42.2 23.8L38 22L42.2 20.2L44 16Z" fill="#BFDBFE" />
+</svg>
