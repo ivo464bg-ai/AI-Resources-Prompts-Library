@@ -59,6 +59,30 @@ document.addEventListener('DOMContentLoaded', async () => {
   let activeCategoryId = null;
   const usernamesById = new Map();
 
+  function isAbsoluteUrl(value) {
+    return /^https?:\/\//i.test(value || '');
+  }
+
+  function getFilePathWithoutQuery(fileRef) {
+    if (!fileRef) {
+      return '';
+    }
+
+    if (isAbsoluteUrl(fileRef)) {
+      try {
+        return new URL(fileRef).pathname || '';
+      } catch (_) {
+        return fileRef.split('?')[0];
+      }
+    }
+
+    return fileRef.split('?')[0];
+  }
+
+  function isImageFile(fileRef) {
+    return /\.(jpeg|jpg|gif|png|webp)$/i.test(getFilePathWithoutQuery(fileRef));
+  }
+
   function getAuthorLabel(userId) {
     const username = usernamesById.get(userId);
     if (username) {
@@ -171,7 +195,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       let query = supabase
         .from('prompts')
-        .select('*, categories(name)')
+        .select('id, title, prompt_text, result_text, file_url, user_id, created_at, category_id, categories(name)')
         .order('created_at', { ascending: false });
 
       if (activeCategoryId) {
@@ -195,25 +219,83 @@ document.addEventListener('DOMContentLoaded', async () => {
       promptsContainer.innerHTML = '';
 
       const imagePaths = [];
+      const attachmentPaths = [];
+      const directAttachmentUrlsMap = {};
       prompts.forEach((prompt) => {
-        if (prompt.file_url && prompt.file_url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+        if (!prompt.file_url) {
+          return;
+        }
+
+        if (isAbsoluteUrl(prompt.file_url)) {
+          directAttachmentUrlsMap[prompt.file_url] = prompt.file_url;
+        } else {
+          attachmentPaths.push(prompt.file_url);
+          if (isImageFile(prompt.file_url)) {
+            imagePaths.push(prompt.file_url);
+          }
+        }
+
+        if (isAbsoluteUrl(prompt.file_url) && isImageFile(prompt.file_url)) {
           imagePaths.push(prompt.file_url);
         }
       });
 
       const signedUrlsMap = {};
-      if (imagePaths.length > 0) {
-        const { data: signedUrlsData, error: signedUrlsError } = await supabase.storage
-          .from('prompt-attachments')
-          .createSignedUrls(imagePaths, 3600);
+      const resolvedAttachmentUrlsMap = {};
 
-        if (!signedUrlsError && signedUrlsData) {
-          signedUrlsData.forEach((item) => {
-            if (!item.error) {
-              signedUrlsMap[item.path] = item.signedUrl;
+      if (attachmentPaths.length > 0) {
+        const uniqueAttachmentPaths = [...new Set(attachmentPaths)];
+        const { data: signedAttachmentUrlsData, error: signedAttachmentUrlsError } = await supabase.storage
+          .from('prompt-attachments')
+          .createSignedUrls(uniqueAttachmentPaths, 3600);
+
+        if (!signedAttachmentUrlsError && signedAttachmentUrlsData) {
+          signedAttachmentUrlsData.forEach((item) => {
+            if (!item.error && item.path && item.signedUrl) {
+              resolvedAttachmentUrlsMap[item.path] = item.signedUrl;
             }
           });
         }
+
+        uniqueAttachmentPaths.forEach((path) => {
+          if (!resolvedAttachmentUrlsMap[path]) {
+            const { data: publicUrlData } = supabase.storage
+              .from('prompt-attachments')
+              .getPublicUrl(path);
+
+            if (publicUrlData?.publicUrl) {
+              resolvedAttachmentUrlsMap[path] = publicUrlData.publicUrl;
+            }
+          }
+        });
+      }
+
+      Object.entries(directAttachmentUrlsMap).forEach(([key, value]) => {
+        resolvedAttachmentUrlsMap[key] = value;
+      });
+
+      if (imagePaths.length > 0) {
+        const storageImagePaths = imagePaths.filter((path) => !isAbsoluteUrl(path));
+
+        if (storageImagePaths.length > 0) {
+          const { data: signedUrlsData, error: signedUrlsError } = await supabase.storage
+            .from('prompt-attachments')
+            .createSignedUrls(storageImagePaths, 3600);
+
+          if (!signedUrlsError && signedUrlsData) {
+            signedUrlsData.forEach((item) => {
+              if (!item.error) {
+                signedUrlsMap[item.path] = item.signedUrl;
+              }
+            });
+          }
+        }
+
+        imagePaths
+          .filter((path) => isAbsoluteUrl(path))
+          .forEach((absoluteImageUrl) => {
+            signedUrlsMap[absoluteImageUrl] = absoluteImageUrl;
+          });
       }
 
       prompts.forEach((prompt) => {
@@ -226,12 +308,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         let imagePreviewHtml = '';
 
         if (prompt.file_url) {
-          const isImage = prompt.file_url.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+          const resolvedAttachmentUrl = resolvedAttachmentUrlsMap[prompt.file_url] || '';
+          const isImage = isImageFile(prompt.file_url);
+
           if (isImage && signedUrlsMap[prompt.file_url]) {
-            imagePreviewHtml = `<img src="${signedUrlsMap[prompt.file_url]}" class="card-img-top mb-2" alt="Attachment Preview" style="max-height: 150px; object-fit: cover;">`;
-          } else {
-            attachmentBtnHtml = `<button class="btn btn-sm btn-outline-secondary view-attachment-btn mt-2 me-2" data-url="${prompt.file_url}">📎 View Attachment</button>`;
+            imagePreviewHtml = `<img src="${signedUrlsMap[prompt.file_url]}" alt="Attachment Preview" style="max-height: 150px; object-fit: cover; width: 100%; border-radius: 8px; margin-bottom: 10px;">`;
+          } else if (isImage && resolvedAttachmentUrl) {
+            imagePreviewHtml = `<img src="${resolvedAttachmentUrl}" alt="Attachment Preview" style="max-height: 150px; object-fit: cover; width: 100%; border-radius: 8px; margin-bottom: 10px;">`;
           }
+
+          attachmentBtnHtml = `<button class="btn btn-sm btn-outline-secondary view-attachment-btn mt-2 me-2" data-url="${prompt.file_url}" data-resolved-url="${resolvedAttachmentUrl}">📎 View Attachment</button>`;
         }
 
         col.innerHTML = `
@@ -255,12 +341,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       document.querySelectorAll('.view-attachment-btn').forEach((btn) => {
         btn.addEventListener('click', async (e) => {
           const fileUrl = e.currentTarget.getAttribute('data-url');
+          const resolvedUrl = e.currentTarget.getAttribute('data-resolved-url');
+
+          if (resolvedUrl) {
+            window.open(resolvedUrl, '_blank');
+            return;
+          }
+
+          if (isAbsoluteUrl(fileUrl)) {
+            window.open(fileUrl, '_blank');
+            return;
+          }
+
           const { data, error } = await supabase.storage.from('prompt-attachments').createSignedUrl(fileUrl, 3600);
+
           if (data) {
             window.open(data.signedUrl, '_blank');
           } else {
-            console.error('Error getting signed URL:', error);
-            alert('Failed to load attachment.');
+            const { data: publicUrlData } = supabase.storage
+              .from('prompt-attachments')
+              .getPublicUrl(fileUrl);
+
+            if (publicUrlData?.publicUrl) {
+              window.open(publicUrlData.publicUrl, '_blank');
+            } else {
+              console.error('Error getting signed URL:', error);
+              alert('Failed to load attachment.');
+            }
           }
         });
       });
@@ -304,8 +411,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     currentAttachmentsList.innerHTML = '';
 
     if (prompt.file_url) {
-      const { data } = await supabase.storage.from('prompt-attachments').createSignedUrl(prompt.file_url, 3600);
-      const url = data ? data.signedUrl : '#';
+      let url = prompt.file_url;
+
+      if (!isAbsoluteUrl(prompt.file_url)) {
+        const { data } = await supabase.storage.from('prompt-attachments').createSignedUrl(prompt.file_url, 3600);
+
+        if (data?.signedUrl) {
+          url = data.signedUrl;
+        } else {
+          const { data: publicUrlData } = supabase.storage
+            .from('prompt-attachments')
+            .getPublicUrl(prompt.file_url);
+
+          url = publicUrlData?.publicUrl || '#';
+        }
+      }
 
       const li = document.createElement('li');
       li.className = 'mb-2 d-flex align-items-center';
