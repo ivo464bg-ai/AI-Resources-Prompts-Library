@@ -3,8 +3,10 @@ import { isAdminUser } from '../../utils/roles.js';
 
 // Login Page Specific Logic
 document.addEventListener('DOMContentLoaded', () => {
+  const mainNavbar = document.getElementById('main-navbar');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
+  const navHomeItem = document.getElementById('nav-home-item');
   const navLoginItem = document.getElementById('nav-login-item');
   const navRegisterItem = document.getElementById('nav-register-item');
   const navLogoutItem = document.getElementById('nav-logout-item');
@@ -24,17 +26,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAuthenticated = !sessionError && !!session;
 
     if (isAuthenticated && session?.user?.id) {
+      navHomeItem.style.display = 'block';
       navDashboard.style.display = 'block';
       navAdmin.style.display = (await isAdminUser(session.user.id)) ? 'block' : 'none';
       navLoginItem.style.display = 'none';
       navRegisterItem.style.display = 'none';
       navLogoutItem.style.display = 'block';
+      if (mainNavbar) {
+        mainNavbar.classList.remove('navbar-guest-mode');
+      }
     } else {
+      navHomeItem.style.display = 'none';
       navDashboard.style.display = 'none';
       navAdmin.style.display = 'none';
       navLoginItem.style.display = 'block';
       navRegisterItem.style.display = 'block';
       navLogoutItem.style.display = 'none';
+      if (mainNavbar) {
+        mainNavbar.classList.add('navbar-guest-mode');
+      }
     }
   }
 

@@ -2,7 +2,9 @@ import { supabase } from '../../utils/supabaseClient.js';
 import { isAdminUser } from '../../utils/roles.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const mainNavbar = document.getElementById('main-navbar');
   const logoutBtn = document.getElementById('logout-btn');
+  const navHome = document.getElementById('nav-home');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
@@ -26,6 +28,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isAuthenticated) {
     const isAdmin = await isAdminUser(currentUserId);
+    navHome.style.display = 'block';
     navDashboard.style.display = 'block';
     navAdmin.style.display = isAdmin ? 'block' : 'none';
     navLogin.style.display = 'none';
@@ -36,7 +39,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (navDivider) {
       navDivider.style.setProperty('display', 'flex', 'important');
     }
+    if (mainNavbar) {
+      mainNavbar.classList.remove('navbar-guest-mode');
+    }
   } else {
+    navHome.style.display = 'none';
     navDashboard.style.display = 'none';
     navAdmin.style.display = 'none';
     navLogin.style.display = 'block';
@@ -45,6 +52,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     navUserEmail.style.display = 'none';
     if (navDivider) {
       navDivider.style.setProperty('display', 'none', 'important');
+    }
+    if (mainNavbar) {
+      mainNavbar.classList.add('navbar-guest-mode');
     }
   }
 
@@ -62,7 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   let activeCategoryId = null;
-  const usernamesById = new Map();
 
   function isAbsoluteUrl(value) {
     return /^https?:\/\//i.test(value || '');
@@ -88,14 +97,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     return /\.(jpeg|jpg|gif|png|webp)$/i.test(getFilePathWithoutQuery(fileRef));
   }
 
-  function getAuthorLabel(userId) {
-    const username = usernamesById.get(userId);
-    if (username) {
-      return username;
-    }
+  function getAuthorLabel(authorEmail, userId) {
+    if (authorEmail) {
+      const atIndex = authorEmail.indexOf('@');
+      if (atIndex > 0) {
+        return authorEmail.slice(0, atIndex);
+      }
 
-    if (currentUserId && userId === currentUserId && currentUserEmail) {
-      return currentUserEmail;
+      return authorEmail;
     }
 
     if (!userId) {
@@ -103,31 +112,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     return `User ${userId.slice(0, 8)}`;
-  }
-
-  async function hydrateAuthorUsernames(userIds) {
-    if (!userIds.length) {
-      return;
-    }
-
-    try {
-      const { data: profiles, error } = await supabase
-        .from('profiles')
-        .select('id, username')
-        .in('id', userIds);
-
-      if (error || !profiles) {
-        return;
-      }
-
-      profiles.forEach((profile) => {
-        if (profile?.id && profile?.username) {
-          usernamesById.set(profile.id, profile.username);
-        }
-      });
-    } catch (error) {
-      console.error('Unable to load author usernames:', error.message);
-    }
   }
 
   async function fetchCategories() {
@@ -198,16 +182,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       promptsContainer.style.display = 'none';
       promptsEmpty.style.display = 'none';
 
-      let query = supabase
-        .from('prompts')
-        .select('id, title, prompt_text, result_text, file_url, user_id, created_at, category_id, categories(name)')
-        .order('created_at', { ascending: false });
-
-      if (activeCategoryId) {
-        query = query.eq('category_id', activeCategoryId);
-      }
-
-      const { data: prompts, error } = await query;
+      const { data: prompts, error } = await supabase.rpc('get_public_prompts_with_authors', {
+        p_category_id: activeCategoryId,
+      });
       if (error) throw error;
 
       promptsLoading.style.display = 'none';
@@ -216,9 +193,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         promptsEmpty.style.display = 'block';
         return;
       }
-
-      const authorIds = [...new Set(prompts.map((prompt) => prompt.user_id).filter(Boolean))];
-      await hydrateAuthorUsernames(authorIds);
 
       promptsContainer.style.display = 'flex';
       promptsContainer.innerHTML = '';
@@ -304,8 +278,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       prompts.forEach((prompt) => {
-        const categoryName = prompt.categories?.name || 'Uncategorized';
-        const authorName = getAuthorLabel(prompt.user_id);
+        const categoryName = prompt.category_name || 'Uncategorized';
+        const authorName = getAuthorLabel(prompt.author_email, prompt.user_id);
         const col = document.createElement('div');
         col.className = 'col';
 

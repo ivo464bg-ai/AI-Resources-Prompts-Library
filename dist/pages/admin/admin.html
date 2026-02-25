@@ -11,13 +11,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <script type="module" crossorigin src="/assets/admin-CXlLfEZ5.js"></script>
+  <script type="module" crossorigin src="/assets/admin-DIrtuzcD.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/supabaseClient-8CxNeXQr.js">
-  <link rel="modulepreload" crossorigin href="/assets/roles-Dahpx40n.js">
-  <link rel="stylesheet" crossorigin href="/assets/roles-DsVCBih7.css">
+  <link rel="modulepreload" crossorigin href="/assets/roles-CRsL3K8t.js">
+  <link rel="stylesheet" crossorigin href="/assets/roles-CIFct62E.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="main-navbar">
     <div class="container-fluid">
       <a class="navbar-brand" href="../home/home.html">AI Prompts Library</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -25,7 +25,7 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-home">
             <a class="nav-link" href="../home/home.html">Home</a>
           </li>
           <li class="nav-item" id="nav-dashboard">
@@ -94,6 +94,7 @@
       <div class="card shadow-sm">
         <div class="card-header bg-white">
           <h2 class="h5 mb-0">Prompt Moderation</h2>
+          <p class="text-muted small mt-2 mb-0 d-md-none">Swipe horizontally to view all table columns.</p>
         </div>
         <div class="card-body">
           <div id="moderationLoading" class="text-center my-4">
@@ -102,9 +103,18 @@
             </div>
           </div>
 
-          <div class="table-responsive" id="moderationTableWrapper" style="display: none;">
-            <table class="table table-striped align-middle">
-              <thead>
+          <div
+            id="moderationTopScroll"
+            class="mb-2"
+            style="display: none; width: 100%; overflow-x: auto; overflow-y: hidden;"
+            aria-label="Horizontal table scroll"
+          >
+            <div id="moderationTopScrollInner" style="height: 1px;"></div>
+          </div>
+
+          <div class="table-responsive" id="moderationTableWrapper" style="display: none; overflow-x: auto; width: 100%;">
+            <table class="table table-striped align-middle mb-0" style="min-width: 920px;">
+              <thead class="text-nowrap">
                 <tr>
                   <th>Title</th>
                   <th>Category</th>
@@ -114,7 +124,7 @@
                   <th>Actions</th>
                 </tr>
               </thead>
-              <tbody id="moderationRows"></tbody>
+              <tbody id="moderationRows" class="text-nowrap"></tbody>
             </table>
           </div>
 

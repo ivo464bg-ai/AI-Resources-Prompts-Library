@@ -2,9 +2,11 @@ import { supabase } from '../../utils/supabaseClient.js';
 import { isAdminUser } from '../../utils/roles.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const mainNavbar = document.getElementById('main-navbar');
   const logoutBtn = document.getElementById('logoutBtn');
   const createCategoryBtn = document.getElementById('createCategoryBtn');
   const addPromptBtn = document.getElementById('addPromptBtn');
+  const navHome = document.getElementById('nav-home');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
@@ -44,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   navDashboard.style.display = 'block';
+  navHome.style.display = 'block';
   navAdmin.style.display = (await isAdminUser(currentUserId)) ? 'block' : 'none';
   navLogin.style.display = 'none';
   navRegister.style.display = 'none';
@@ -51,6 +54,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   navUserEmail.style.display = 'block';
   if (navDivider) {
     navDivider.style.setProperty('display', 'flex', 'important');
+  }
+  if (mainNavbar) {
+    mainNavbar.classList.remove('navbar-guest-mode');
   }
 
   // 2. Logout functionality

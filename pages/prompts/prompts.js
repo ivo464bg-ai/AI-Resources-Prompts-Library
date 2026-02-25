@@ -3,9 +3,11 @@ import { isAdminUser } from '../../utils/roles.js';
 
 // Prompts Page Specific Logic
 document.addEventListener('DOMContentLoaded', async () => {
+  const mainNavbar = document.getElementById('main-navbar');
   const logoutBtn = document.getElementById('logoutBtn');
   const createPromptBtn = document.getElementById('createPromptBtn');
   const searchInput = document.getElementById('searchPrompts');
+  const navHome = document.getElementById('nav-home');
   const navDashboard = document.getElementById('nav-dashboard');
   const navPrompts = document.getElementById('nav-prompts');
   const navAdmin = document.getElementById('nav-admin');
@@ -39,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isAuthenticated) {
     const isAdmin = await isAdminUser(currentUser?.id);
+    navHome.style.display = 'block';
     navDashboard.style.display = 'block';
     navPrompts.style.display = 'block';
     navAdmin.style.display = isAdmin ? 'block' : 'none';
@@ -49,7 +52,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (navDivider) {
       navDivider.style.setProperty('display', 'flex', 'important');
     }
+    if (mainNavbar) {
+      mainNavbar.classList.remove('navbar-guest-mode');
+    }
   } else {
+    navHome.style.display = 'none';
     navDashboard.style.display = 'none';
     navPrompts.style.display = 'none';
     navAdmin.style.display = 'none';
@@ -59,6 +66,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     navUserEmail.style.display = 'none';
     if (navDivider) {
       navDivider.style.setProperty('display', 'none', 'important');
+    }
+    if (mainNavbar) {
+      mainNavbar.classList.add('navbar-guest-mode');
     }
     createPromptBtn.style.display = 'none';
   }

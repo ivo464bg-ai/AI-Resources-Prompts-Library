@@ -2,6 +2,8 @@ import { supabase } from '../../utils/supabaseClient.js';
 import { isAdminUser } from '../../utils/roles.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const mainNavbar = document.getElementById('main-navbar');
+  const navHome = document.getElementById('nav-home');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
@@ -16,9 +18,66 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statTotalPrompts = document.getElementById('stat-total-prompts');
   const statTotalCategories = document.getElementById('stat-total-categories');
   const moderationLoading = document.getElementById('moderationLoading');
+  const moderationTopScroll = document.getElementById('moderationTopScroll');
+  const moderationTopScrollInner = document.getElementById('moderationTopScrollInner');
   const moderationTableWrapper = document.getElementById('moderationTableWrapper');
   const moderationRows = document.getElementById('moderationRows');
   const moderationEmpty = document.getElementById('moderationEmpty');
+  let syncingTopScroll = false;
+  let syncingTableScroll = false;
+
+  function syncTopScrollWidth() {
+    if (!moderationTopScroll || !moderationTopScrollInner || !moderationTableWrapper) {
+      return;
+    }
+
+    if (moderationTableWrapper.style.display === 'none') {
+      moderationTopScroll.style.display = 'none';
+      return;
+    }
+
+    const table = moderationTableWrapper.querySelector('table');
+    if (!table) {
+      moderationTopScroll.style.display = 'none';
+      return;
+    }
+
+    moderationTopScrollInner.style.width = `${table.scrollWidth}px`;
+    const hasHorizontalOverflow = table.scrollWidth > moderationTableWrapper.clientWidth + 1;
+    moderationTopScroll.style.display = hasHorizontalOverflow ? 'block' : 'none';
+
+    if (!hasHorizontalOverflow) {
+      moderationTopScroll.scrollLeft = 0;
+      moderationTableWrapper.scrollLeft = 0;
+      return;
+    }
+
+    moderationTopScroll.scrollLeft = moderationTableWrapper.scrollLeft;
+  }
+
+  if (moderationTopScroll && moderationTableWrapper) {
+    moderationTopScroll.addEventListener('scroll', () => {
+      if (syncingTableScroll) {
+        return;
+      }
+
+      syncingTopScroll = true;
+      moderationTableWrapper.scrollLeft = moderationTopScroll.scrollLeft;
+      syncingTopScroll = false;
+    });
+
+    moderationTableWrapper.addEventListener('scroll', () => {
+      if (syncingTopScroll) {
+        return;
+      }
+
+      syncingTableScroll = true;
+      moderationTopScroll.scrollLeft = moderationTableWrapper.scrollLeft;
+      syncingTableScroll = false;
+    });
+
+    window.addEventListener('resize', syncTopScrollWidth);
+  }
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   const isAuthenticated = !sessionError && !!session;
@@ -35,6 +94,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     return;
   }
 
+  navHome.style.display = 'block';
   navDashboard.style.display = 'block';
   navAdmin.style.display = 'block';
   navLogin.style.display = 'none';
@@ -44,6 +104,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   userEmail.textContent = currentUser.email || '';
   if (navDivider) {
     navDivider.style.setProperty('display', 'flex', 'important');
+  }
+  if (mainNavbar) {
+    mainNavbar.classList.remove('navbar-guest-mode');
   }
 
   if (logoutBtn) {
@@ -89,6 +152,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   async function loadPrompts() {
     moderationLoading.style.display = 'block';
+    if (moderationTopScroll) {
+      moderationTopScroll.style.display = 'none';
+    }
     moderationTableWrapper.style.display = 'none';
     moderationEmpty.style.display = 'none';
 
@@ -171,6 +237,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     moderationTableWrapper.style.display = 'block';
+    if (moderationTopScroll) {
+      syncTopScrollWidth();
+    }
   }
 
   await loadStats();
