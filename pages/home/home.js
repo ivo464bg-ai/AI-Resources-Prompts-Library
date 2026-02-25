@@ -21,6 +21,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const promptsContainer = document.getElementById('promptsContainer');
   const promptsEmpty = document.getElementById('promptsEmpty');
 
+  function createModalIfAvailable(modalId) {
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement || !window.bootstrap?.Modal) {
+      return null;
+    }
+
+    return new window.bootstrap.Modal(modalElement);
+  }
+
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   const isAuthenticated = !sessionError && !!session;
   const currentUserId = session?.user?.id || null;
@@ -370,7 +379,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  const viewPromptModal = new window.bootstrap.Modal(document.getElementById('viewPromptModal'));
+  const viewPromptModal = createModalIfAvailable('viewPromptModal');
   const editPromptTitleInput = document.getElementById('editPromptTitle');
   const editPromptTextInput = document.getElementById('editPromptText');
   const editPromptResultInput = document.getElementById('editPromptResult');
@@ -379,6 +388,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentAttachmentsList = document.getElementById('currentAttachmentsList');
 
   async function openReadOnlyPromptModal(prompt) {
+    if (
+      !viewPromptModal
+      || !editPromptTitleInput
+      || !editPromptTextInput
+      || !editPromptResultInput
+      || !editPromptFileInput
+      || !currentAttachmentContainer
+      || !currentAttachmentsList
+    ) {
+      return;
+    }
+
     editPromptTitleInput.value = prompt.title;
     editPromptTextInput.value = prompt.prompt_text;
     editPromptResultInput.value = prompt.result_text || '';

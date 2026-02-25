@@ -3,6 +3,15 @@ import { isAdminUser } from '../../utils/roles.js';
 
 // Prompts Page Specific Logic
 document.addEventListener('DOMContentLoaded', async () => {
+  function createModalIfAvailable(modalId) {
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement || !window.bootstrap?.Modal) {
+      return null;
+    }
+
+    return new window.bootstrap.Modal(modalElement);
+  }
+
   const mainNavbar = document.getElementById('main-navbar');
   const logoutBtn = document.getElementById('logoutBtn');
   const createPromptBtn = document.getElementById('createPromptBtn');
@@ -309,7 +318,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Add Prompt Modal Logic
-  const addPromptModal = new window.bootstrap.Modal(document.getElementById('addPromptModal'));
+  const addPromptModal = createModalIfAvailable('addPromptModal');
   const savePromptBtn = document.getElementById('savePromptBtn');
   const promptCategorySelect = document.getElementById('promptCategorySelect');
   const promptTitleInput = document.getElementById('promptTitle');
@@ -319,6 +328,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (isAuthenticated) {
     createPromptBtn.addEventListener('click', () => {
+      if (
+        !addPromptModal
+        || !promptTitleInput
+        || !promptTextInput
+        || !promptResultInput
+        || !promptFileInput
+        || !promptCategorySelect
+      ) {
+        return;
+      }
+
       // Clear form
       promptTitleInput.value = '';
       promptTextInput.value = '';
@@ -333,8 +353,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  savePromptBtn.addEventListener('click', async () => {
+  if (savePromptBtn) {
+    savePromptBtn.addEventListener('click', async () => {
     if (!isAuthenticated || !currentUser?.id) {
+      return;
+    }
+
+    if (!promptTitleInput || !promptTextInput || !promptResultInput || !promptCategorySelect || !promptFileInput) {
       return;
     }
 
@@ -381,7 +406,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (promptError) throw promptError;
 
-      addPromptModal.hide();
+      if (addPromptModal) {
+        addPromptModal.hide();
+      }
       fetchPrompts(); // Refresh the list
       
       alert('Prompt saved successfully!');
@@ -389,10 +416,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error creating prompt:', error.message);
       alert('Failed to create prompt: ' + error.message);
     }
-  });
+    });
+  }
 
   // View/Edit Prompt Functionality
-  const viewPromptModal = new window.bootstrap.Modal(document.getElementById('viewPromptModal'));
+  const viewPromptModal = createModalIfAvailable('viewPromptModal');
   const updatePromptBtn = document.getElementById('updatePromptBtn');
   const editPromptIdInput = document.getElementById('editPromptId');
   const editPromptOldFileUrlInput = document.getElementById('editPromptOldFileUrl');
@@ -404,6 +432,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentAttachmentsList = document.getElementById('currentAttachmentsList');
 
   async function openViewPromptModal(prompt) {
+    if (
+      !viewPromptModal
+      || !editPromptIdInput
+      || !editPromptOldFileUrlInput
+      || !editPromptTitleInput
+      || !editPromptTextInput
+      || !editPromptResultInput
+      || !editPromptFileInput
+      || !updatePromptBtn
+      || !currentAttachmentContainer
+      || !currentAttachmentsList
+    ) {
+      return;
+    }
+
     const isReadOnlyMode = !isAuthenticated;
 
     editPromptIdInput.value = prompt.id;
@@ -483,8 +526,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  updatePromptBtn.addEventListener('click', async () => {
+  if (updatePromptBtn) {
+    updatePromptBtn.addEventListener('click', async () => {
     if (!isAuthenticated || !currentUser?.id) {
+      return;
+    }
+
+    if (
+      !editPromptIdInput
+      || !editPromptOldFileUrlInput
+      || !editPromptTitleInput
+      || !editPromptTextInput
+      || !editPromptResultInput
+      || !editPromptFileInput
+    ) {
       return;
     }
 
@@ -535,7 +590,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (error) throw error;
 
-      viewPromptModal.hide();
+      if (viewPromptModal) {
+        viewPromptModal.hide();
+      }
       fetchPrompts(); // Refresh the list
       
       alert('Prompt updated successfully!');
@@ -543,7 +600,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error updating prompt:', error.message);
       alert('Failed to update prompt: ' + error.message);
     }
-  });
+    });
+  }
 
   searchInput.addEventListener('input', (e) => {
     const searchTerm = e.target.value.toLowerCase();

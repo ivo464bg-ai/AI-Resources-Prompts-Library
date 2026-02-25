@@ -26,6 +26,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const statMyCategories = document.getElementById('stat-my-categories');
   const statMyRecent = document.getElementById('stat-my-recent');
 
+  function createModalIfAvailable(modalId) {
+    const modalElement = document.getElementById(modalId);
+    if (!modalElement || !window.bootstrap?.Modal) {
+      return null;
+    }
+
+    return new window.bootstrap.Modal(modalElement);
+  }
+
   // 1. Check if user is logged in
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
   const isAuthenticated = !sessionError && !!session;
@@ -319,18 +328,27 @@ document.addEventListener('DOMContentLoaded', async () => {
   fetchPrompts();
 
   // Create Category Functionality
-  const createCategoryModal = new window.bootstrap.Modal(document.getElementById('createCategoryModal'));
+  const createCategoryModal = createModalIfAvailable('createCategoryModal');
   const saveCategoryBtn = document.getElementById('saveCategoryBtn');
   const categoryNameInput = document.getElementById('categoryName');
 
   if (createCategoryBtn) {
     createCategoryBtn.addEventListener('click', () => {
+      if (!createCategoryModal || !categoryNameInput) {
+        return;
+      }
+
       categoryNameInput.value = '';
       createCategoryModal.show();
     });
   }
 
-  saveCategoryBtn.addEventListener('click', async () => {
+  if (saveCategoryBtn) {
+    saveCategoryBtn.addEventListener('click', async () => {
+      if (!categoryNameInput) {
+        return;
+      }
+
     const name = categoryNameInput.value.trim();
     if (!name) {
       alert('Please enter a category name.');
@@ -347,15 +365,18 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (error) throw error;
 
-      createCategoryModal.hide();
+      if (createCategoryModal) {
+        createCategoryModal.hide();
+      }
       fetchCategories(); // Refresh the list
     } catch (error) {
       console.error('Error creating category:', error.message);
       alert('Failed to create category: ' + error.message);
     }
-  });
+    });
+  }
 
-  const addPromptModal = new window.bootstrap.Modal(document.getElementById('addPromptModal'));
+  const addPromptModal = createModalIfAvailable('addPromptModal');
   const savePromptBtn = document.getElementById('savePromptBtn');
   const promptTitleInput = document.getElementById('promptTitle');
   const promptTextInput = document.getElementById('promptText');
@@ -364,6 +385,16 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (addPromptBtn) {
     addPromptBtn.addEventListener('click', () => {
+      if (
+        !addPromptModal
+        || !promptTitleInput
+        || !promptTextInput
+        || !promptResultInput
+        || !promptFileInput
+      ) {
+        return;
+      }
+
       if (!activeCategoryId) {
         alert('Please select a category first to add a prompt.');
         return;
@@ -379,7 +410,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
-  savePromptBtn.addEventListener('click', async () => {
+  if (savePromptBtn) {
+    savePromptBtn.addEventListener('click', async () => {
+    if (!promptTitleInput || !promptTextInput || !promptResultInput || !promptFileInput) {
+      return;
+    }
+
     const title = promptTitleInput.value.trim();
     const text = promptTextInput.value.trim();
     const result = promptResultInput.value.trim();
@@ -425,7 +461,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (promptError) throw promptError;
 
-      addPromptModal.hide();
+      if (addPromptModal) {
+        addPromptModal.hide();
+      }
       fetchPrompts(); // Refresh the list
       
       // Show success message (simple alert for now, could be a toast)
@@ -434,10 +472,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error creating prompt:', error.message);
       alert('Failed to create prompt: ' + error.message);
     }
-  });
+    });
+  }
 
   // View/Edit Prompt Functionality
-  const viewPromptModal = new window.bootstrap.Modal(document.getElementById('viewPromptModal'));
+  const viewPromptModal = createModalIfAvailable('viewPromptModal');
   const updatePromptBtn = document.getElementById('updatePromptBtn');
   const editPromptIdInput = document.getElementById('editPromptId');
   const editPromptOldFileUrlInput = document.getElementById('editPromptOldFileUrl');
@@ -449,6 +488,21 @@ document.addEventListener('DOMContentLoaded', async () => {
   const currentAttachmentsList = document.getElementById('currentAttachmentsList');
 
   async function openViewPromptModal(prompt) {
+    if (
+      !viewPromptModal
+      || !editPromptIdInput
+      || !editPromptOldFileUrlInput
+      || !editPromptTitleInput
+      || !editPromptTextInput
+      || !editPromptResultInput
+      || !editPromptFileInput
+      || !updatePromptBtn
+      || !currentAttachmentContainer
+      || !currentAttachmentsList
+    ) {
+      return;
+    }
+
     const isReadOnlyMode = !isAuthenticated;
 
     editPromptIdInput.value = prompt.id;
@@ -528,7 +582,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  updatePromptBtn.addEventListener('click', async () => {
+  if (updatePromptBtn) {
+    updatePromptBtn.addEventListener('click', async () => {
+    if (
+      !editPromptIdInput
+      || !editPromptOldFileUrlInput
+      || !editPromptTitleInput
+      || !editPromptTextInput
+      || !editPromptResultInput
+      || !editPromptFileInput
+    ) {
+      return;
+    }
+
     const id = editPromptIdInput.value;
     const oldFileUrl = editPromptOldFileUrlInput.value;
     const title = editPromptTitleInput.value.trim();
@@ -579,7 +645,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
       if (error) throw error;
 
-      viewPromptModal.hide();
+      if (viewPromptModal) {
+        viewPromptModal.hide();
+      }
       fetchPrompts(); // Refresh the list
       
       alert('Prompt updated successfully!');
@@ -587,5 +655,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       console.error('Error updating prompt:', error.message);
       alert('Failed to update prompt: ' + error.message);
     }
-  });
+    });
+  }
 });
