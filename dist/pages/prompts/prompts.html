@@ -7,9 +7,10 @@
   <!-- Bootstrap CSS -->
   <!-- Global CSS -->
   <!-- Page Specific CSS -->
-  <script type="module" crossorigin src="/assets/prompts-CgttXQxj.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-Db4K6C7q.js">
-  <link rel="stylesheet" crossorigin href="/assets/supabaseClient-DsVCBih7.css">
+  <script type="module" crossorigin src="/assets/prompts-ndYzQCZ3.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/supabaseClient-8CxNeXQr.js">
+  <link rel="modulepreload" crossorigin href="/assets/roles-Dahpx40n.js">
+  <link rel="stylesheet" crossorigin href="/assets/roles-DsVCBih7.css">
   <link rel="stylesheet" crossorigin href="/assets/prompts-BbVurGVM.css">
 </head>
 <body>
@@ -25,21 +26,30 @@
           <li class="nav-item">
             <a class="nav-link" href="../home/home.html">Home</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-dashboard">
             <a class="nav-link" href="../dashboard/dashboard.html">Dashboard</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-prompts">
             <a class="nav-link active" aria-current="page" href="./prompts.html">Prompts</a>
+          </li>
+          <li class="nav-item" id="nav-admin" style="display: none;">
+            <a class="nav-link" href="../admin/admin.html">Admin Panel</a>
           </li>
         </ul>
         <ul class="navbar-nav ms-auto align-items-center">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-user-email" style="display: none;">
             <span id="user-email" class="navbar-text"></span>
           </li>
-          <li class="nav-item d-none d-lg-flex align-items-center mx-3">
+          <li class="nav-item d-none d-lg-flex align-items-center mx-3" id="nav-divider" style="display: none !important;">
             <div class="vr text-light" style="height: 24px;"></div>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-login" style="display: none;">
+            <a class="nav-link" href="../login/login.html">Login</a>
+          </li>
+          <li class="nav-item" id="nav-register" style="display: none;">
+            <a class="nav-link" href="../login/login.html?mode=register">Register</a>
+          </li>
+          <li class="nav-item" id="nav-logout" style="display: none;">
             <a class="nav-link" href="#" id="logoutBtn">Log out</a>
           </li>
         </ul>
@@ -118,6 +128,10 @@
               <label for="promptResult" class="form-label">Result Text (Optional)</label>
               <textarea class="form-control" id="promptResult" rows="4"></textarea>
             </div>
+            <div class="mb-3">
+              <label for="promptFile" class="form-label">Attachment (Optional)</label>
+              <input type="file" id="promptFile" class="form-control" accept="image/*,.pdf,.txt">
+            </div>
           </form>
         </div>
         <div class="modal-footer">
@@ -139,6 +153,7 @@
         <div class="modal-body">
           <form id="viewPromptForm">
             <input type="hidden" id="editPromptId">
+            <input type="hidden" id="editPromptOldFileUrl">
             <div class="mb-3">
               <label for="editPromptTitle" class="form-label">Title</label>
               <input type="text" class="form-control" id="editPromptTitle" required>
@@ -150,6 +165,14 @@
             <div class="mb-3">
               <label for="editPromptResult" class="form-label">Result Text</label>
               <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
+            </div>
+            <div class="mb-3">
+              <label for="editPromptFile" class="form-label">Update Attachment (Optional)</label>
+              <input type="file" id="editPromptFile" class="form-control" accept="image/*,.pdf,.txt">
+              <div id="currentAttachmentContainer" class="mt-2" style="display: none;">
+                <small class="text-muted">Current attachment:</small>
+                <ul id="currentAttachmentsList" class="list-unstyled mt-1"></ul>
+              </div>
             </div>
           </form>
         </div>

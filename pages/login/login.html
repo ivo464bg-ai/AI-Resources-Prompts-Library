@@ -20,15 +20,26 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item" id="nav-dashboard" style="display: none;">
+            <a class="nav-link" href="../dashboard/dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item" id="nav-admin" style="display: none;">
+            <a class="nav-link" href="../admin/admin.html">Admin Panel</a>
+          </li>
+        </ul>
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-home-item">
             <a class="nav-link" href="../home/home.html">Home</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-login-item">
             <a class="nav-link active" aria-current="page" href="./login.html">Login</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-register-item">
             <a class="nav-link" href="./login.html?mode=register">Register</a>
+          </li>
+          <li class="nav-item" id="nav-logout-item" style="display: none;">
+            <a class="nav-link" href="#" id="logoutBtn">Log out</a>
           </li>
         </ul>
       </div>

@@ -1,10 +1,12 @@
 import { supabase } from '../../utils/supabaseClient.js';
+import { isAdminUser } from '../../utils/roles.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
   const logoutBtn = document.getElementById('logoutBtn');
   const createCategoryBtn = document.getElementById('createCategoryBtn');
   const addPromptBtn = document.getElementById('addPromptBtn');
   const navDashboard = document.getElementById('nav-dashboard');
+  const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
   const navRegister = document.getElementById('nav-register');
   const navLogout = document.getElementById('nav-logout');
@@ -42,6 +44,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   navDashboard.style.display = 'block';
+  navAdmin.style.display = (await isAdminUser(currentUserId)) ? 'block' : 'none';
   navLogin.style.display = 'none';
   navRegister.style.display = 'none';
   navLogout.style.display = 'block';

@@ -1,0 +1,1 @@
+import{s}from"./supabaseClient-8CxNeXQr.js";document.addEventListener("DOMContentLoaded",async()=>{const{data:{session:o},error:e}=await s.auth.getSession();if(e){console.error("Error checking session:",e.message),window.location.href="./pages/login/login.html";return}window.location.href="./pages/home/home.html"});

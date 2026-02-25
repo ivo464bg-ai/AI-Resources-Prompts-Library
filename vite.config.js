@@ -9,6 +9,7 @@ export default defineConfig({
         main: resolve(__dirname, 'index.html'), // Това ще бъде пренасочващият файл
         home: resolve(__dirname, 'pages/home/home.html'),
         dashboard: resolve(__dirname, 'pages/dashboard/dashboard.html'),
+        admin: resolve(__dirname, 'pages/admin/admin.html'),
         prompts: resolve(__dirname, 'pages/prompts/prompts.html'),
         login: resolve(__dirname, 'pages/login/login.html'),
       },
