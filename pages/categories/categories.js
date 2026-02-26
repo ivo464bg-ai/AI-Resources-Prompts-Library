@@ -4,6 +4,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const categoriesLoading = document.getElementById('categoriesLoading');
   const categoriesGrid = document.getElementById('categoriesGrid');
   const categoriesEmpty = document.getElementById('categoriesEmpty');
+  const pastelCardBackgroundClasses = [
+    'bg-light',
+    'bg-secondary-subtle',
+    'bg-primary-subtle',
+    'bg-success-subtle',
+    'bg-info-subtle',
+    'bg-warning-subtle',
+    'bg-danger-subtle'
+  ];
 
   function getCategoryIcon(categoryName) {
     const normalized = (categoryName || '').toLowerCase();
@@ -27,19 +36,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     return 'bi-folder2-open';
   }
 
-  function createCategoryCard(category) {
+  function createCategoryCard(category, index) {
     const col = document.createElement('div');
     col.className = 'col';
 
     const encodedCategory = encodeURIComponent(category.name);
     const iconClass = getCategoryIcon(category.name);
+    const cardBackgroundClass = pastelCardBackgroundClasses[index % pastelCardBackgroundClasses.length];
 
     col.innerHTML = `
       <a href="../explore/explore.html?category=${encodedCategory}" class="text-decoration-none">
-        <div class="card h-100 shadow-sm border-0">
+        <div class="card category-card h-100 shadow-sm border-0 ${cardBackgroundClass} text-dark">
           <div class="card-body d-flex flex-column">
             <div class="d-flex justify-content-between align-items-start mb-3">
-              <span class="fs-3 text-primary"><i class="bi ${iconClass}"></i></span>
+              <span class="fs-3 text-dark"><i class="bi ${iconClass}"></i></span>
               <span class="badge text-bg-secondary">${category.count} prompts</span>
             </div>
             <h2 class="h5 mb-0 text-dark">${category.name}</h2>
@@ -89,8 +99,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
 
       categoriesGrid.innerHTML = '';
-      categoryItems.forEach((category) => {
-        categoriesGrid.appendChild(createCategoryCard(category));
+      categoryItems.forEach((category, index) => {
+        categoriesGrid.appendChild(createCategoryCard(category, index));
       });
       categoriesGrid.style.display = 'flex';
     } catch (error) {
