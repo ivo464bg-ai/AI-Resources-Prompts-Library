@@ -107,7 +107,7 @@ flowchart TD
 	D -->|No| G[Denied by RLS]
 
 	E -->|Owner| F
-	E -->|Admin via is_admin()| F
+	E -->|Admin role| F
 	E -->|Neither| G
 
 	B -->|SELECT/INSERT/UPDATE/DELETE profiles| H{Own profile only}
