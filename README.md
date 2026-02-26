@@ -8,6 +8,12 @@ A modern, full-stack web application designed for saving, exploring, and managin
 
 ## ✨ Key Features
 
+* **Modern Public UX:**
+	* **Landing Page (Home):** Dedicated marketing-style entry page with a Hero section and feature highlights for non-authenticated visitors.
+	* **Categories Page:** Visually rich category grid with subtle Bootstrap pastel styling and per-category prompt counters.
+	* **Explore Page:** Public prompt feed is now separated into a dedicated discovery experience.
+* **Advanced URL State Management:** Category selection updates URL query params (e.g., `?category=Coding`) so filtered views are shareable and bookmarkable.
+* **Smart Navbar Across Pages:** Navigation automatically reacts to auth state and switches contextually between **Login/Register** and **Dashboard/Logout**.
 * **User Authentication & Authorization:** Secure sign-up and login flow using Supabase Auth.
 * **Prompt Management:** Authenticated users can create, read, update, and delete (CRUD) their own customized AI prompts, categorized by use case.
 * **Media Support:** Seamless image uploading and storage for visual prompt references.
@@ -40,9 +46,14 @@ A modern, full-stack web application designed for saving, exploring, and managin
 
 ## 📂 Project Structure Highlights
 
-* `/pages`: Contains modularized HTML/JS/CSS logic for different views (`/home`, `/dashboard`, `/admin`, `/login`).
+* `/pages`: Modularized multi-page architecture with dedicated public and private views:
+	* `/home`: Public landing page (Hero + product highlights).
+	* `/categories`: Category discovery grid with prompt counts and pastel Bootstrap visual treatment.
+	* `/explore`: Public prompt feed view.
+	* `/dashboard`, `/prompts`, `/admin`, `/login`: Authenticated user and administration workflows.
 * `/supabase/migrations`: Complete SQL history of the database schema, including tables, policies, views, and performance optimizations.
 * `/public`: Static assets, SVGs, and web manifests.
+* `/utils`: Shared client-side modules (including auth-aware navbar/session helpers used across pages).
 
 ---
 
