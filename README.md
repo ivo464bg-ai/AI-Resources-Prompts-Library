@@ -54,13 +54,13 @@ erDiagram
 	}
 
 	PROFILES {
-		UUID id PK FK
+		UUID id PK
 		TEXT username
 		TIMESTAMPTZ created_at
 	}
 
 	USER_ROLES {
-		UUID user_id PK FK
+		UUID user_id PK
 		TEXT role
 		TIMESTAMPTZ created_at
 	}
@@ -75,8 +75,8 @@ erDiagram
 
 	PROMPTS {
 		UUID id PK
-		UUID user_id FK
-		UUID category_id FK
+		UUID user_id
+		UUID category_id
 		TEXT title
 		TEXT prompt_text
 		TEXT result_text
@@ -100,7 +100,7 @@ flowchart TD
 	A[Client: anon/authenticated] --> B{Operation?}
 
 	B -->|SELECT categories/prompts| C[Allowed for everyone]
-	B -->|INSERT/UPDATE categories/prompts| D{auth.uid() == row.user_id}
+	B -->|INSERT/UPDATE categories/prompts| D{Owner check}
 	B -->|DELETE categories/prompts| E{owner OR admin}
 
 	D -->|Yes| F[Allowed]
@@ -110,11 +110,11 @@ flowchart TD
 	E -->|Admin via is_admin()| F
 	E -->|Neither| G
 
-	B -->|SELECT/INSERT/UPDATE/DELETE profiles| H{auth.uid() == profiles.id}
+	B -->|SELECT/INSERT/UPDATE/DELETE profiles| H{Own profile only}
 	H -->|Yes| F
 	H -->|No| G
 
-	B -->|SELECT/INSERT/UPDATE/DELETE user_roles| I{auth.uid() == user_roles.user_id}
+	B -->|SELECT/INSERT/UPDATE/DELETE user_roles| I{Own role row only}
 	I -->|Yes| F
 	I -->|No| G
 ```
