@@ -4,6 +4,8 @@ import { isAdminUser } from '../../utils/roles.js';
 document.addEventListener('DOMContentLoaded', async () => {
   const mainNavbar = document.getElementById('main-navbar');
   const navHome = document.getElementById('nav-home');
+  const navCategories = document.getElementById('nav-categories');
+  const navExplore = document.getElementById('nav-explore');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
@@ -95,6 +97,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   navHome.style.display = 'block';
+  navCategories.style.display = 'block';
+  navExplore.style.display = 'block';
   navDashboard.style.display = 'block';
   navAdmin.style.display = 'block';
   navLogin.style.display = 'none';

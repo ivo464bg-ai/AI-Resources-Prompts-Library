@@ -11,6 +11,8 @@ export default defineConfig({
         dashboard: resolve(__dirname, 'pages/dashboard/dashboard.html'),
         admin: resolve(__dirname, 'pages/admin/admin.html'),
         prompts: resolve(__dirname, 'pages/prompts/prompts.html'),
+        explore: resolve(__dirname, 'pages/explore/explore.html'),
+        categories: resolve(__dirname, 'pages/categories/categories.html'),
         login: resolve(__dirname, 'pages/login/login.html'),
       },
     },

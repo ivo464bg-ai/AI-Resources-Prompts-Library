@@ -6,7 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const mainNavbar = document.getElementById('main-navbar');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
-  const navHomeItem = document.getElementById('nav-home-item');
+  const navHome = document.getElementById('nav-home');
+  const navCategories = document.getElementById('nav-categories');
+  const navExplore = document.getElementById('nav-explore');
   const navLoginItem = document.getElementById('nav-login-item');
   const navRegisterItem = document.getElementById('nav-register-item');
   const navLogoutItem = document.getElementById('nav-logout-item');
@@ -26,7 +28,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const isAuthenticated = !sessionError && !!session;
 
     if (isAuthenticated && session?.user?.id) {
-      navHomeItem.style.display = 'block';
+      navHome.style.display = 'block';
+      navCategories.style.display = 'block';
+      navExplore.style.display = 'block';
       navDashboard.style.display = 'block';
       navAdmin.style.display = (await isAdminUser(session.user.id)) ? 'block' : 'none';
       navLoginItem.style.display = 'none';
@@ -36,7 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
         mainNavbar.classList.remove('navbar-guest-mode');
       }
     } else {
-      navHomeItem.style.display = 'none';
+      navHome.style.display = 'block';
+      navCategories.style.display = 'block';
+      navExplore.style.display = 'block';
       navDashboard.style.display = 'none';
       navAdmin.style.display = 'none';
       navLoginItem.style.display = 'block';

@@ -11,12 +11,13 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/home-BNoiWGZC.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script type="module" crossorigin src="/assets/home-C2ff7BYp.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/supabaseClient-8CxNeXQr.js">
-  <link rel="modulepreload" crossorigin href="/assets/roles-DOHBFPxQ.js">
-  <link rel="stylesheet" crossorigin href="/assets/roles-CReWotEG.css">
-  <link rel="stylesheet" crossorigin href="/assets/home-CKyMhF5J.css">
+  <link rel="modulepreload" crossorigin href="/assets/roles-BbqFL7ZG.js">
+  <link rel="stylesheet" crossorigin href="/assets/home-CqeMxxjM.css">
+  <link rel="stylesheet" crossorigin href="/assets/global-C9Zw3yKZ.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark" id="main-navbar">
@@ -29,6 +30,12 @@
         <ul class="navbar-nav me-auto">
           <li class="nav-item" id="nav-home">
             <a class="nav-link active" aria-current="page" href="./home.html">Home</a>
+          </li>
+          <li class="nav-item" id="nav-categories">
+            <a class="nav-link" href="../categories/categories.html">Categories</a>
+          </li>
+          <li class="nav-item" id="nav-explore">
+            <a class="nav-link" href="../explore/explore.html">Explore</a>
           </li>
           <li class="nav-item" id="nav-dashboard" style="display: none;">
             <a class="nav-link" href="../dashboard/dashboard.html">Dashboard</a>
@@ -44,10 +51,10 @@
           <li class="nav-item d-none d-lg-flex align-items-center mx-3" id="nav-divider" style="display: none !important;">
             <div class="vr text-light" style="height: 24px;"></div>
           </li>
-          <li class="nav-item" id="nav-login" style="display: none;">
+          <li class="nav-item" id="nav-login">
             <a class="nav-link" href="../login/login.html">Login</a>
           </li>
-          <li class="nav-item" id="nav-register" style="display: none;">
+          <li class="nav-item" id="nav-register">
             <a class="nav-link" href="../login/login.html?mode=register">Register</a>
           </li>
           <li class="nav-item" id="nav-logout" style="display: none;">
@@ -58,93 +65,56 @@
     </div>
   </nav>
 
-  <div class="container-fluid mt-4 mb-5 flex-grow-1">
-    <div class="row">
-      <aside class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse rounded p-3 mb-4 mb-md-0" id="sidebarMenu">
-        <div class="position-sticky">
-          <div class="d-flex align-items-center mb-3 border-bottom pb-2">
-            <h5 class="mb-0">Categories</h5>
-          </div>
+  <main class="flex-grow-1">
+    <section class="hero-section py-5">
+      <div class="container py-5 text-center">
+        <h1 class="display-4 fw-bold mb-3">Master Your AI Interactions</h1>
+        <p class="lead mb-4 mx-auto hero-subheadline">A secure, organized library to save, discover, and manage your best AI prompts.</p>
+        <div class="d-flex flex-column flex-sm-row justify-content-center gap-3">
+          <a href="../login/login.html?mode=register" class="btn btn-primary btn-lg px-4">Get Started</a>
+          <a href="../explore/explore.html" class="btn btn-outline-light btn-lg px-4">Explore Prompts</a>
+        </div>
+      </div>
+    </section>
 
-          <div id="categoriesLoading" class="text-center my-3">
-            <div class="spinner-border text-primary spinner-border-sm" role="status">
-              <span class="visually-hidden">Loading...</span>
+    <section class="py-5 bg-white">
+      <div class="container">
+        <div class="text-center mb-5">
+          <h2 class="fw-bold mb-2">Built for AI Power Users</h2>
+          <p class="text-muted mb-0">Keep your best prompts structured, private, and easy to revisit.</p>
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <div class="feature-card h-100 p-4 text-center rounded-4 shadow-sm border">
+              <div class="feature-icon mb-3"><i class="bi bi-folder2-open"></i></div>
+              <h3 class="h5">Organize by Category</h3>
+              <p class="text-muted mb-0">Group prompts by use case so you can find exactly what you need in seconds.</p>
             </div>
           </div>
-
-          <ul class="nav flex-column" id="categoriesList" style="display: none;"></ul>
-
-          <div id="categoriesEmpty" class="text-center text-muted my-3" style="display: none;">
-            <small>No categories found.</small>
+          <div class="col-md-4">
+            <div class="feature-card h-100 p-4 text-center rounded-4 shadow-sm border">
+              <div class="feature-icon mb-3"><i class="bi bi-shield-lock"></i></div>
+              <h3 class="h5">Secure &amp; Private</h3>
+              <p class="text-muted mb-0">Your personal prompt library is protected with secure authentication and access control.</p>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="feature-card h-100 p-4 text-center rounded-4 shadow-sm border">
+              <div class="feature-icon mb-3"><i class="bi bi-compass"></i></div>
+              <h3 class="h5">Explore Examples</h3>
+              <p class="text-muted mb-0">Browse public prompts to discover new ideas and improve your own prompt crafting.</p>
+            </div>
           </div>
         </div>
-      </aside>
-
-      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pb-2 mb-3 border-bottom">
-          <h1 class="h2">Saved Prompts</h1>
-        </div>
-
-        <div id="promptsLoading" class="text-center my-5">
-          <div class="spinner-border text-success" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-
-        <div class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4" id="promptsContainer" style="display: none;"></div>
-
-        <div id="promptsEmpty" class="text-center text-muted my-5" style="display: none;">
-          <h5>No prompts found.</h5>
-        </div>
-      </main>
-    </div>
-  </div>
+      </div>
+    </section>
+  </main>
 
   <footer class="bg-dark text-white text-center py-3 mt-auto">
     <div class="container">
       <p class="mb-0">&copy; 2026 AI Resources & Prompts Library. All rights reserved.</p>
     </div>
   </footer>
-
-  <div class="modal fade" id="viewPromptModal" tabindex="-1" aria-labelledby="viewPromptModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="viewPromptModalLabel">Prompt Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <form id="viewPromptForm">
-            <input type="hidden" id="editPromptId">
-            <input type="hidden" id="editPromptOldFileUrl">
-            <div class="mb-3">
-              <label for="editPromptTitle" class="form-label">Title</label>
-              <input type="text" class="form-control" id="editPromptTitle" required>
-            </div>
-            <div class="mb-3">
-              <label for="editPromptText" class="form-label">Prompt Text</label>
-              <textarea class="form-control" id="editPromptText" rows="6" required></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="editPromptResult" class="form-label">Result Text</label>
-              <textarea class="form-control" id="editPromptResult" rows="6"></textarea>
-            </div>
-            <div class="mb-3">
-              <label for="editPromptFile" class="form-label">Attachment</label>
-              <input type="file" id="editPromptFile" class="form-control" accept="image/*,.pdf,.txt">
-              <div id="currentAttachmentContainer" class="mt-2" style="display: none;">
-                <small class="text-muted">Current attachment:</small>
-                <ul id="currentAttachmentsList" class="list-unstyled mt-1"></ul>
-              </div>
-            </div>
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>

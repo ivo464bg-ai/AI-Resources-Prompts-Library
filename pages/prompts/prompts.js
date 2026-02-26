@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const createPromptBtn = document.getElementById('createPromptBtn');
   const searchInput = document.getElementById('searchPrompts');
   const navHome = document.getElementById('nav-home');
+  const navCategories = document.getElementById('nav-categories');
+  const navExplore = document.getElementById('nav-explore');
   const navDashboard = document.getElementById('nav-dashboard');
   const navPrompts = document.getElementById('nav-prompts');
   const navAdmin = document.getElementById('nav-admin');
@@ -51,6 +53,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (isAuthenticated) {
     const isAdmin = await isAdminUser(currentUser?.id);
     navHome.style.display = 'block';
+    navCategories.style.display = 'block';
+    navExplore.style.display = 'block';
     navDashboard.style.display = 'block';
     navPrompts.style.display = 'block';
     navAdmin.style.display = isAdmin ? 'block' : 'none';
@@ -65,7 +69,9 @@ document.addEventListener('DOMContentLoaded', async () => {
       mainNavbar.classList.remove('navbar-guest-mode');
     }
   } else {
-    navHome.style.display = 'none';
+    navHome.style.display = 'block';
+    navCategories.style.display = 'block';
+    navExplore.style.display = 'block';
     navDashboard.style.display = 'none';
     navPrompts.style.display = 'none';
     navAdmin.style.display = 'none';

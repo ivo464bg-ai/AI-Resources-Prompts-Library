@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   const createCategoryBtn = document.getElementById('createCategoryBtn');
   const addPromptBtn = document.getElementById('addPromptBtn');
   const navHome = document.getElementById('nav-home');
+  const navCategories = document.getElementById('nav-categories');
+  const navExplore = document.getElementById('nav-explore');
   const navDashboard = document.getElementById('nav-dashboard');
   const navAdmin = document.getElementById('nav-admin');
   const navLogin = document.getElementById('nav-login');
@@ -56,6 +58,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   navDashboard.style.display = 'block';
   navHome.style.display = 'block';
+  navCategories.style.display = 'block';
+  navExplore.style.display = 'block';
   navAdmin.style.display = (await isAdminUser(currentUserId)) ? 'block' : 'none';
   navLogin.style.display = 'none';
   navRegister.style.display = 'none';

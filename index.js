@@ -5,15 +5,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   if (error) {
     console.error('Error checking session:', error.message);
-    window.location.href = './pages/login/login.html';
+    window.location.href = './pages/home/home.html';
     return;
   }
 
   if (session) {
-    // User is logged in
-    window.location.href = './pages/home/home.html';
+    window.location.href = './pages/dashboard/dashboard.html';
   } else {
-    // User is not logged in (public showcase)
     window.location.href = './pages/home/home.html';
   }
 });
