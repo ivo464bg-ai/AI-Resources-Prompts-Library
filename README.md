@@ -44,6 +44,83 @@ A modern, full-stack web application designed for saving, exploring, and managin
 
 ---
 
+## 🗄️ Database Schema
+
+```mermaid
+erDiagram
+	AUTH_USERS {
+		UUID id PK
+		TEXT email
+	}
+
+	PROFILES {
+		UUID id PK FK
+		TEXT username
+		TIMESTAMPTZ created_at
+	}
+
+	USER_ROLES {
+		UUID user_id PK FK
+		TEXT role
+		TIMESTAMPTZ created_at
+	}
+
+	CATEGORIES {
+		UUID id PK
+		UUID user_id FK
+		TEXT name
+		TEXT description
+		TIMESTAMPTZ created_at
+	}
+
+	PROMPTS {
+		UUID id PK
+		UUID user_id FK
+		UUID category_id FK
+		TEXT title
+		TEXT prompt_text
+		TEXT result_text
+		TEXT file_url
+		TIMESTAMPTZ created_at
+	}
+
+	AUTH_USERS ||--|| PROFILES : "id -> profiles.id"
+	AUTH_USERS ||--o| USER_ROLES : "id -> user_roles.user_id"
+	AUTH_USERS ||--o{ CATEGORIES : "id -> categories.user_id"
+	AUTH_USERS ||--o{ PROMPTS : "id -> prompts.user_id"
+	CATEGORIES ||--o{ PROMPTS : "id -> prompts.category_id (nullable)"
+```
+
+Schema source: `supabase/migrations/20260222100000_initial_schema.sql`, `supabase/migrations/20260222140000_add_file_storage.sql`, and subsequent policy/performance migrations.
+
+### 🔐 Access Model (RLS)
+
+```mermaid
+flowchart TD
+	A[Client: anon/authenticated] --> B{Operation?}
+
+	B -->|SELECT categories/prompts| C[Allowed for everyone]
+	B -->|INSERT/UPDATE categories/prompts| D{auth.uid() == row.user_id}
+	B -->|DELETE categories/prompts| E{owner OR admin}
+
+	D -->|Yes| F[Allowed]
+	D -->|No| G[Denied by RLS]
+
+	E -->|Owner| F
+	E -->|Admin via is_admin()| F
+	E -->|Neither| G
+
+	B -->|SELECT/INSERT/UPDATE/DELETE profiles| H{auth.uid() == profiles.id}
+	H -->|Yes| F
+	H -->|No| G
+
+	B -->|SELECT/INSERT/UPDATE/DELETE user_roles| I{auth.uid() == user_roles.user_id}
+	I -->|Yes| F
+	I -->|No| G
+```
+
+---
+
 ## 📂 Project Structure Highlights
 
 * `/pages`: Modularized multi-page architecture with dedicated public and private views:
