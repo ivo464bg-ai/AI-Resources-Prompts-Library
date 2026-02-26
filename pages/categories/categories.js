@@ -1,6 +1,9 @@
 import { supabase } from '../../utils/supabaseClient.js';
+import { initPublicNavbarAuth } from '../../utils/auth.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
+  await initPublicNavbarAuth();
+
   const categoriesLoading = document.getElementById('categoriesLoading');
   const categoriesGrid = document.getElementById('categoriesGrid');
   const categoriesEmpty = document.getElementById('categoriesEmpty');

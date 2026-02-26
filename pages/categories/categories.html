@@ -25,22 +25,37 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-home">
             <a class="nav-link" href="../home/home.html">Home</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-categories">
             <a class="nav-link active" aria-current="page" href="./categories.html">Categories</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-explore">
             <a class="nav-link" href="../explore/explore.html">Explore</a>
           </li>
+          <li class="nav-item" id="nav-dashboard" style="display: none;">
+            <a class="nav-link" href="../dashboard/dashboard.html">Dashboard</a>
+          </li>
+          <li class="nav-item" id="nav-admin" style="display: none;">
+            <a class="nav-link" href="../admin/admin.html">Admin Panel</a>
+          </li>
         </ul>
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
+        <ul class="navbar-nav ms-auto align-items-center">
+          <li class="nav-item" id="nav-user-email" style="display: none;">
+            <span id="user-email-display" class="navbar-text"></span>
+          </li>
+          <li class="nav-item d-none d-lg-flex align-items-center mx-3" id="nav-divider" style="display: none !important;">
+            <div class="vr text-light" style="height: 24px;"></div>
+          </li>
+          <li class="nav-item" id="nav-login">
             <a class="nav-link" href="../login/login.html">Login</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-register">
             <a class="nav-link" href="../login/login.html?mode=register">Register</a>
+          </li>
+          <li class="nav-item" id="nav-logout" style="display: none;">
+            <a class="nav-link" href="#" id="logout-btn">Log out</a>
           </li>
         </ul>
       </div>

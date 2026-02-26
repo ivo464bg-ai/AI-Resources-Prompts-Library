@@ -1,0 +1,1 @@
+import{s as o}from"./supabaseClient-5h-f_Tei.js";async function s(r){if(!r)return null;const{data:e,error:n}=await o.from("user_roles").select("role").eq("user_id",r).maybeSingle();return n?null:(e==null?void 0:e.role)||null}async function i(r){return await s(r)==="admin"}export{i};

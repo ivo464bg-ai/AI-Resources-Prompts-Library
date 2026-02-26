@@ -1,18 +1,9 @@
 import { supabase } from '../../utils/supabaseClient.js';
-import { isAdminUser } from '../../utils/roles.js';
+import { initPublicNavbarAuth } from '../../utils/auth.js';
 
 // Login Page Specific Logic
-document.addEventListener('DOMContentLoaded', () => {
-  const mainNavbar = document.getElementById('main-navbar');
-  const navDashboard = document.getElementById('nav-dashboard');
-  const navAdmin = document.getElementById('nav-admin');
-  const navHome = document.getElementById('nav-home');
-  const navCategories = document.getElementById('nav-categories');
-  const navExplore = document.getElementById('nav-explore');
-  const navLoginItem = document.getElementById('nav-login-item');
-  const navRegisterItem = document.getElementById('nav-register-item');
-  const navLogoutItem = document.getElementById('nav-logout-item');
-  const logoutBtn = document.getElementById('logoutBtn');
+document.addEventListener('DOMContentLoaded', async () => {
+  await initPublicNavbarAuth({ logoutRedirectTo: '../../index.html' });
 
   const authForm = document.getElementById('authForm');
   const formTitle = document.getElementById('formTitle');
@@ -22,51 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const alertArea = document.getElementById('alertArea');
 
   let isLoginMode = true;
-
-  async function setupNavbar() {
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    const isAuthenticated = !sessionError && !!session;
-
-    if (isAuthenticated && session?.user?.id) {
-      navHome.style.display = 'block';
-      navCategories.style.display = 'block';
-      navExplore.style.display = 'block';
-      navDashboard.style.display = 'block';
-      navAdmin.style.display = (await isAdminUser(session.user.id)) ? 'block' : 'none';
-      navLoginItem.style.display = 'none';
-      navRegisterItem.style.display = 'none';
-      navLogoutItem.style.display = 'block';
-      if (mainNavbar) {
-        mainNavbar.classList.remove('navbar-guest-mode');
-      }
-    } else {
-      navHome.style.display = 'block';
-      navCategories.style.display = 'block';
-      navExplore.style.display = 'block';
-      navDashboard.style.display = 'none';
-      navAdmin.style.display = 'none';
-      navLoginItem.style.display = 'block';
-      navRegisterItem.style.display = 'block';
-      navLogoutItem.style.display = 'none';
-      if (mainNavbar) {
-        mainNavbar.classList.add('navbar-guest-mode');
-      }
-    }
-  }
-
-  setupNavbar();
-
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        showAlert('Failed to log out.', 'danger');
-      } else {
-        window.location.href = '../../index.html';
-      }
-    });
-  }
 
   function applyMode() {
     if (isLoginMode) {

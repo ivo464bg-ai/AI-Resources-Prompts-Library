@@ -1,0 +1,1 @@
+import"./supabaseClient-5h-f_Tei.js";import{i as t}from"./auth-C10oIzEU.js";import"./roles-BcTnPyVM.js";document.addEventListener("DOMContentLoaded",async()=>{await t({logoutRedirectTo:"./home.html"})});

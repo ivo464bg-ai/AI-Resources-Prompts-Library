@@ -1,0 +1,1 @@
+.category-card{transition:transform .2s ease,box-shadow .2s ease}.category-card:hover{transform:translateY(-3px);box-shadow:0 .5rem 1rem #0000001f!important}@media (prefers-reduced-motion: reduce){.category-card{transition:none}.category-card:hover{transform:none}}

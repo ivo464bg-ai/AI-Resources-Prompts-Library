@@ -1,0 +1,1 @@
+import{s}from"./supabaseClient-5h-f_Tei.js";document.addEventListener("DOMContentLoaded",async()=>{const{data:{session:o},error:e}=await s.auth.getSession();if(e){console.error("Error checking session:",e.message),window.location.href="./pages/home/home.html";return}o?window.location.href="./pages/dashboard/dashboard.html":window.location.href="./pages/home/home.html"});
